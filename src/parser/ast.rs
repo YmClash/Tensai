@@ -2,11 +2,12 @@ use num_bigint::BigInt;
 use std::fmt;
 use std::str::pattern::Pattern;
 use crate::lexer::tok::Keywords;
+use crate::parser::ast_1::{};
 
 #[allow(dead_code)]
 #[derive(Debug, PartialEq,Clone)]
 pub enum ASTNode{
-    Programm(Vec<ASTNode>),
+    Program(Vec<ASTNode>),
     Declaration(Declaration),
     Expression(Expression),
     Statement(Statement),
@@ -21,6 +22,13 @@ pub enum Device {
     GPU(usize),  // usize pour l'index du GPU
     TPU,
     Custom(String),
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum TensorLayout {
+    Contiguous,
+    Strided(Vec<usize>),
+    Sparse,
 }
 
 
@@ -38,10 +46,8 @@ pub struct TensorMetadata {
 #[allow(dead_code)]
 #[derive(Debug, Clone, , PartialEq)]
 pub struct ParserError {
-
     pub message: String,
     pub position: Position,
-
 }
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
@@ -58,6 +64,7 @@ pub enum Declaration {
     FunctionDeclaration(FunctionDeclaration),
     TypeAnnotation(TypeAnnotation),
 }
+#[allow(dead_code)]
 #[derive(Debug, PartialEq, Clone)]
 pub enum TensorType {
     Scalar,
@@ -65,15 +72,34 @@ pub enum TensorType {
     Matrix,
     Tensor(usize),  // usize représente le rang du tenseur
 }
+#[derive(Debug, PartialEq, Clone)]
+pub enum TensorDataType {
+    F32,
+    F64,
+    I32,
+    I64,
+    Complex32,
+    Complex64,
+    Bool,
+    Generic(String),
+}
 
-#[allow(dead_code)]
+#[derive(Debug, PartialEq, Clone)]
+pub enum TensorDimension {
+    Fixed(Vec<usize>),
+    Dynamic(Vec<Option<usize>>),
+    Named(Vec<String>),
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct TensorDeclaration {
     pub name: String,
-    pub shape: Vec<usize>,
-    pub data_type: DataType,
+    pub shape: TensorDimension,
+    pub data_type: TensorDataType,
+    pub layout: TensorLayout,
     pub visibility: Visibility,
     pub mutability: Mutability,
+    pub device: Device,
 }
 #[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq)]
@@ -89,11 +115,37 @@ pub struct VariableDeclaration {
 #[derive(Debug, Clone, PartialEq)]
 pub struct FunctionDeclaration {
     pub name: String,
-    pub parameters:     Vec<Parameter>,
+    pub parameters: Vec<Parameter>,
     pub return_type: DataType,
     pub body: Body,
     pub visibility: Visibility,
     pub mutability: Mutability,
+    pub annotations: Vec<Annotation>,
+}
+#[allow(dead_code)]
+#[derive(Debug, Clone, PartialEq)]
+pub enum Annotation {
+    Parallel,
+    GPU {
+        device: Option<usize>,
+        memory: Option<String>,
+    },
+    Cache {
+        strategy: CacheStrategy,
+    },
+    Fusion {
+        group: String,
+    },
+}
+
+
+#[allow(dead_code)]
+#[derive(Debug, Clone, PartialEq)]
+pub enum CacheStrategy {
+    Memory,
+    Register,
+    Shared,
+    Global,
 }
 
 #[allow(dead_code)]
@@ -113,9 +165,6 @@ pub struct Parameter{
 
 
 
-
-
-
 #[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expression{
@@ -124,28 +173,91 @@ pub enum Expression{
     BinaryOperation(BinaryOperation),
     UnaryOperation(UnaryOperation),
     FunctionCall(FunctionCall),
-
-    ArrayAccess(ArrayAccess), // transfere dans IndexAccess
-    ArraySlice(ArraySlice), // pas encore completement implementé
-
+    TensorOperation(TensorOperation),
+    TensorFunction(TensorFunction),
+    // IndexAccess(IndexAccess),
+    ArraySlice(ArraySlice),
     MemberAccess(MemberAccess),
     LambdaExpression(LambdaExpression),
-    // MatchExpression(MatchExpression),
-    // MatchArm(Box<MatchArm>),
     TypeCast(TypeCast),
     Conditional(Conditional),
-    // Assignment(Assignment),
-    // Borrow(Borrow),
     Statement(Box<Statement>),
     MethodCall(MethodCall),
-    IndexAccess(IndexAccess), // Aka ArrayAccess
     CompoundAssignment(CompoundAssignment),
-    // DestructuringAssignment(DestructuringAssignment),
     RangeExpression(RangeExpression),
     Array(ArrayExpression),
     ArrayRepeat(ArrayRepeatExpression),
 
 }
+
+#[allow(dead_code)]
+#[derive(Debug, Clone, PartialEq)]
+pub enum TensorOperation {
+    Contract {
+        left: Box<Expression>,
+        right: Box<Expression>,
+        dims: Option<Vec<usize>>,
+    },
+    Broadcast {
+        tensor: Box<Expression>,
+        shape: Vec<usize>,
+    },
+    Reshape {
+        tensor: Box<Expression>,
+        shape: Vec<Expression>,
+    },
+    Slice {
+        tensor: Box<Expression>,
+        slices: Vec<SliceSpec>,
+    },
+    Transpose {
+        tensor: Box<Expression>,
+        dims: Option<Vec<usize>>,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum TensorFunction {
+    Zeros(Vec<Expression>),
+    Ones(Vec<Expression>),
+    Eye(Expression),
+    Random {
+        shape: Vec<Expression>,
+        distribution: Distribution,
+    },
+    LinSpace {
+        start: Box<Expression>,
+        end: Box<Expression>,
+        num: Box<Expression>,
+    },
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Clone, PartialEq)]
+
+pub enum Distribution {
+    Uniform {
+        low: Option<Box<Expression>>,
+        high: Option<Box<Expression>>,
+    },
+    Normal {
+        mean: Option<Box<Expression>>,
+        std: Option<Box<Expression>>,
+    },
+}
+#[derive(Debug, Clone, PartialEq)]
+pub enum SliceSpec {
+    Single(Expression),
+    Range {
+        start: Option<Expression>,
+        end: Option<Expression>,
+        step: Option<Expression>,
+    },
+    All,
+}
+
+
+
 // #[allow(dead_code)]
 // #[derive(Debug, Clone, PartialEq)]
 // pub struct MatchArm {
@@ -162,12 +274,12 @@ pub struct CompoundAssignment{
     pub operator: CompoundOperator,
     pub value: Box<Expression>,
 }
-#[allow(dead_code)]
-#[derive(Debug, Clone, PartialEq)]
-pub struct IndexAccess{
-    pub array: Box<Expression>,
-    pub index: Box<Expression>,
-}
+// #[allow(dead_code)]
+// #[derive(Debug, Clone, PartialEq)]
+// pub struct IndexAccess{
+//     pub array: Box<Expression>,
+//     pub index: Box<Expression>,
+// }
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq)]
@@ -272,7 +384,7 @@ pub struct LambdaExpression {
     pub parameters: Vec<Parameter>,
     pub return_type: Option<DataType>,
     //pub body: Box<Expression>,
-    pub body: Vec<ASTNode>,
+    pub body: Body,
     //pub body: Body,
 }
 
@@ -563,6 +675,14 @@ pub enum DataType {
     Named(String),
 
     SelfType,
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Clone, PartialEq)]
+pub struct TensorTypeInfo{
+    pub dtype:TensorDataType,
+    pub dims: TensorDimension,
+    pub layout: TensorLayout,
 }
 
 
