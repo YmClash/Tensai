@@ -1,0 +1,11 @@
+[package]
+name = "Tensai"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+
+[lib]
+name = "tensai"
+src = "src/lib.rs"
