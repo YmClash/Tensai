@@ -1,13 +1,18 @@
 use crate::lexer::lexer_error::LexerError;
+use num_bigint::BigInt;
 
 #[allow(dead_code)]
 #[derive(Debug, PartialEq,Clone)]
 pub enum TokenType{
-    IDENTIFIER(Identifier),
+    IDENTIFIER{name: String},
+    INTEGER{value: BigInt},
+    FLOAT{value: f64},
 
-    INTEGER(IntegerType),
-    FLOAT(FloatType),
-    COMPLEX(ComplexType),
+
+    // INTEGER(IntegerType),
+    // FLOAT(FloatType),
+
+    // COMPLEX(ComplexType),
 
     HEXADECIMAL {value: u64},
     STRING {value: String,kind: StringKind},
@@ -19,6 +24,7 @@ pub enum TokenType{
     DELIMITER(Delimiters),
     COMMENT(String),
     ERROR(LexerError),
+    UNKNOWN,
 
 
 }

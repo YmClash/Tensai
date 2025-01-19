@@ -64,7 +64,7 @@ impl<'a> Lexer<'a> {
     }
 
     #[allow(dead_code)]
-    fn create_error(&self, error: LexerErrorType) -> TokenType {
+    pub fn create_error(&self, error: LexerErrorType) -> TokenType {
         let position = Position {
             line: self.current_line,
             column: self.current_column,
