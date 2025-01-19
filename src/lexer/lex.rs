@@ -172,6 +172,10 @@ impl<'a> Lexer<'a>  {
 
         operators.insert("..".to_string(), Operators::DOTDOT);
         operators.insert("..=".to_string(), Operators::DOTDOTEQUAL);
+        operators.insert("'".to_string(), Operators::TRANSPOSE);
+        operators.insert("#>".to_string(), Operators::CONTRACT);
+
+
 
         return operators;
     }

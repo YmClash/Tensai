@@ -67,7 +67,7 @@ pub enum Operators{
     DOUBLESTAREQUAL, // '**=' DOUBLE ETOILE EGAL / DOUBLE STAR EQUAL
     AND,             // '&&' ET ET / AND
     OR,              // '||' OU OU / OR
-    AT,               // '@' AROBASE / AT
+
 
     //DOUBLESLASH, // '//' DOUBLE SLASH / DOUBLE SLASH
     DOUBLESLASHEQUAL, // '//=' DOUBLE SLASH EGAL / DOUBLE SLASH EQUAL
@@ -87,7 +87,7 @@ pub enum Operators{
     DOTDOTEQUAL, // '..=' DEUX POINTS EGAL / DOUBLE DOT EQUAL RangeInclusive Operator
 
 
-    // TENSORPROD,               // '@' AROBASE / AT
+    AT,               // '@' AROBASE / AT// TENSORPROD,               // '@' AROBASE / AT
     TRANSPOSE,   // "'" TRANSPOSE / TRANSPOSE ou  "'"
     CONTRACT,    //  "#>"          // Contraction complète
     CONTRACTDIM, //  "#[0-9]+>"    // Contraction sur dimensions spécifiques

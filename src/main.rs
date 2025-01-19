@@ -5,7 +5,7 @@ fn main() {
     println!("Hello, Tensaï: A Genius Tensor Language!!!!!!");
     println!("\n");
 
-    let code_sourde = r#"2+3"#;
+    let code_sourde = r#"A #[1,2]> B"#;
     let mut lexer = Lexer::new(code_sourde);
     let tokens = lexer.tokenize();
 
