@@ -80,76 +80,24 @@ pub enum Operators{
 
 
     // TENSORPROD,               // '@' AROBASE / AT
-    // TRANSPOSE,   // "T" TRANSPOSE / TRANSPOSE ou  "'"
-    // CONTRACT,    //  "#>"          // Contraction complète
-    // CONTRACTDIM, //  "#[0-9]+>"    // Contraction sur dimensions spécifiques
+    TRANSPOSE,   // "'" TRANSPOSE / TRANSPOSE ou  "'"
+    CONTRACT,    //  "#>"          // Contraction complète
+    CONTRACTDIM, //  "#[0-9]+>"    // Contraction sur dimensions spécifiques
 
 }
 
 #[allow(dead_code)]
 #[derive(Debug, PartialEq,Clone)]
 pub enum Keywords {
-    AND,
-    AS,
-    BREAK,
-    BLOCK,
-
-    CONST,
-    CLASS,
-    CONTINUE,
-    CACHE,
-    DEL,
-
-    ELIF,
-    ELSE,
-    ENUM,
-    EXCEPT,
-    EXPAND,
-    FALSE,
-    FINALLY,
-    FN,
-    FOR,
-    FOREACH,
-    GPU,
-    IF,
-    IMPL,
-    IN,
-    IS,
-    LAMBDA,
-    LET,
-    LOOP,
-    MATCH,
-    MOD,
-    NONE,
-    NOT,
-    ON,
-    OR,
-
-    PARALLEL,
-    PUB,
-    PASS,
-    RETURN,
-    SELF,
-    STRUCT,
-    TENSOR,
-    TRUE,
-    TYPE,
-    TYPEOF,
-    USE,
-    WHERE,
-    WHILE,
-    YIELD,
+    AND,AS,BREAK,BLOCK, CONST, CLASS, CONTINUE, CACHE, DEL, ELIF, ELSE, ENUM, EXCEPT,
+    EXPAND, FALSE, FINALLY, FN, FOR, GPU, IF, IMPL, IN, IS, LAMBDA, LET, LOOP, MATCH, MOD, NONE,
+    NOT, ON, OR, PARALLEL, PUB, PASS,RETURN, SELF, STRUCT, TENSOR, TRUE, TYPE, TYPEOF, USE, WHERE, WHILE, YIELD,
 
     //TYPE KEYWORDS
-    I32,
-    I64,
-    F32,
-    F64,
-    C32,
-    C64,
-    STR,
-    CHAR,
-    BOOL,
+    I32, I64, F32, F64, C32, C64, STR, CHAR, BOOL,
+
+    //gestion de memoire
+    USING,ALLOC,FREE
 
 }
 
@@ -171,6 +119,15 @@ pub enum Delimiters{
     DOUBLECOLON, // '::' DEUX POINTS / DOUBLE COLON
 
 }
+
+// #[allow(dead_code)]
+// #[derive(Debug, PartialEq, Clone)]
+// pub enum TensorType {
+//     Scalar,
+//     Vector,
+//     Matrix,
+//     Tensor(usize),  // usize représente le rang du tenseur
+// }
 
 #[allow(dead_code)]
 #[derive(Debug, PartialEq,Clone)]
