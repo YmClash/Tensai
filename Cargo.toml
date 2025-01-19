@@ -10,3 +10,10 @@ num-bigint = "0.4.6"
 [lib]
 name = "tensai"
 src = "src/lib.rs"
+
+
+[[test]]
+name = "lex_test"
+path = "tests/lex_test.rs"
+
+#[[test]]

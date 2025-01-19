@@ -81,6 +81,7 @@ impl<'a> Lexer<'a>  {
         keywords.insert("False".to_string(),Keywords::FALSE);
         keywords.insert("finally".to_string(),Keywords::FINALLY);
         keywords.insert("for".to_string(),Keywords::FOR);
+        keywords.insert("fn".to_string(),Keywords::FN);
         keywords.insert("gpu".to_string(),Keywords::GPU);
         keywords.insert("if".to_string(),Keywords::IF);
         keywords.insert("in".to_string(),Keywords::IN);
@@ -559,6 +560,11 @@ impl<'a> Lexer<'a>  {
         }
         return tokens;
     }
+
+
+
+
+
     /////////////////////////////////by YmC///////////////////////////////////////////////
 
 

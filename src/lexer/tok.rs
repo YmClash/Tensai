@@ -25,6 +25,8 @@ pub enum TokenType{
     COMMENT(String),
     ERROR(LexerError),
     UNKNOWN,
+    DOCSTRING {value: String},
+
 
 
 }
