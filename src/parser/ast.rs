@@ -1,6 +1,5 @@
 use num_bigint::BigInt;
 use std::fmt;
-use std::str::pattern::Pattern;
 use crate::lexer::tok::Keywords;
 use crate::parser::ast_1::{};
 
@@ -44,13 +43,13 @@ pub struct TensorMetadata {
 
 
 #[allow(dead_code)]
-#[derive(Debug, Clone, , PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ParserError {
     pub message: String,
     pub position: Position,
 }
 #[allow(dead_code)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Position {
     pub line: usize,
     pub column: usize,
@@ -220,7 +219,7 @@ pub enum TensorOperation {
 pub enum TensorFunction {
     Zeros(Vec<Expression>),
     Ones(Vec<Expression>),
-    Eye(Expression),
+    Eye(Box<Expression>),
     Random {
         shape: Vec<Expression>,
         distribution: Distribution,

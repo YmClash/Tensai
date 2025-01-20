@@ -158,7 +158,7 @@ pub enum Expression {
     UnaryOperation(UnaryOperation),
     FunctionCall(FunctionCall),
     TensorOperation(TensorOperation),
-    TensorFunction(TensorFunction),
+    TensorFunction(Box<TensorFunction>),
     // IndexAccess(IndexAccess),
     ArraySlice(ArraySlice),
     MemberAccess(MemberAccess),
@@ -202,7 +202,7 @@ pub enum TensorOperation {
 pub enum TensorFunction {
     Zeros(Vec<Expression>),
     Ones(Vec<Expression>),
-    Eye(Expression),
+    Eye(Box<Expression>),
     Random {
         shape: Vec<Expression>,
         distribution: Distribution,

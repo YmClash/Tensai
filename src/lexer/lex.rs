@@ -213,7 +213,7 @@ impl<'a> Lexer<'a>  {
             Some('0'..='9') => Some(self.lex_number()),
             Some('a'..='z') | Some('A'..='Z') | Some('_') => Some(self.lex_identifier_or_keyword()),
             Some('"') | Some('\'') => Some(self.lex_string()),
-            Some('#') => Some(self.lex_comment()),
+            Some('#') => Some(self.lex_operator().unwrap()),
             Some('/') => {
                 if let Some(next_char) = self.peek_next_char() {
                     match next_char {
@@ -489,47 +489,48 @@ impl<'a> Lexer<'a>  {
 
     }
     fn lex_comment(&mut self) -> TokenType {
-        self.current_token_text.clear();
-        let mut comment = String::new();
-
-        // Skip the initial '#' or '/'
-        self.next_char();
-
-        match self.peek_char() {
-            // Pour les commentaires sur une ligne
-            Some('/') | Some('#') => {
-                self.next_char(); // Skip second '/' or '#'
-                while let Some(&ch) = self.source.peek() {
-                    if ch == '\n' { break; }
-                    comment.push(self.next_char().unwrap());
-                }
-                TokenType::COMMENT(comment)
-            },
-            // Pour les commentaires multi-lignes
-            Some('*') => {
-                self.next_char(); // Skip '*'
-                let mut ended = false;
-                while let Some(&ch) = self.source.peek() {
-                    if ch == '*' {
-                        self.next_char();
-                        if let Some('/') = self.peek_char() {
-                            self.next_char();
-                            ended = true;
-                            break;
-                        }
-                        comment.push('*');
-                    } else {
-                        comment.push(self.next_char().unwrap());
-                    }
-                }
-                if !ended {
-                    self.create_error(LexerErrorType::UnterminatedComment)
-                } else {
-                    TokenType::COMMENT(comment)
-                }
-            },
-            _ => TokenType::COMMENT(comment)
-        }
+        // self.current_token_text.clear();
+        // let mut comment = String::new();
+        //
+        // // Skip the initial '#' or '/'
+        // self.next_char();
+        //
+        // match self.peek_char() {
+        //     // Pour les commentaires sur une ligne
+        //     // Some('/') /*| Some('#')*/ => {
+        //     //     self.next_char(); // Skip second '/' or '#'
+        //     //     while let Some(&ch) = self.source.peek() {
+        //     //         if ch == '\n' { break; }
+        //     //         comment.push(self.next_char().unwrap());
+        //     //     }
+        //     //     TokenType::COMMENT(comment)
+        //     // },
+        //     // Pour les commentaires multi-lignes
+        //     Some('*') => {
+        //         self.next_char(); // Skip '*'
+        //         let mut ended = false;
+        //         while let Some(&ch) = self.source.peek() {
+        //             if ch == '*' {
+        //                 self.next_char();
+        //                 if let Some('/') = self.peek_char() {
+        //                     self.next_char();
+        //                     ended = true;
+        //                     break;
+        //                 }
+        //                 comment.push('*');
+        //             } else {
+        //                 comment.push(self.next_char().unwrap());
+        //             }
+        //         }
+        //         if !ended {
+        //             self.create_error(LexerErrorType::UnterminatedComment)
+        //         } else {
+        //             TokenType::COMMENT(comment)
+        //         }
+        //     },
+        //     _ => TokenType::COMMENT(comment)
+        // }
+        todo!()
     }
 
 
