@@ -53,6 +53,10 @@ pub enum ParserErrorType{
 
     TypeInferenceError,
 
+    UnexpectedEndOfInput,
+
+    ExpectedCloseParenthesis
+
 }
 
 #[allow(dead_code)]
@@ -108,6 +112,11 @@ impl Display for ParserErrorType {
             ParserErrorType::MissingType => write!(f, "Missing Type"),
             ParserErrorType::MissingParameter => write!(f, "Missing Parameter"),
             ParserErrorType::TypeInferenceError => write!(f, "Type Inference Error"),
+
+            ParserErrorType::UnexpectedEndOfInput => write!(f, "Unexpected End Of Input"),
+            ParserErrorType::ExpectedCloseParenthesis => write!(f, "Expected Close Parenthesis"),
+
+
         }
     }
 
@@ -138,6 +147,11 @@ impl  ParserError{
             ParserErrorType::MissingType => "Missing type".to_string(),
             ParserErrorType::MissingParameter => "Missing parameter".to_string(),
             ParserErrorType::TypeInferenceError => "Type inference error".to_string(),
+
+            ParserErrorType::UnexpectedEndOfInput => "Unexpected end of input".to_string(),
+
+            ParserErrorType::ExpectedCloseParenthesis => "Expected close parenthesis".to_string(),
+
 
         };
 

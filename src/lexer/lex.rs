@@ -58,7 +58,7 @@ impl<'a> Lexer<'a>  {
             operators: Self::operators(),
             delimiters: Self::delimiters(),
             current_line: 1,
-            current_column: 1,
+            current_column: 0,
             current_token_text: String::new(),
             at_line_start: true,
         };
@@ -70,9 +70,11 @@ impl<'a> Lexer<'a>  {
         let mut keywords = HashMap::new();
         keywords.insert("and".to_string(),Keywords::AND);
         keywords.insert("as".to_string(),Keywords::AS);
+        keywords.insert("assert".to_string(),Keywords::ASSERT);
         keywords.insert("break".to_string(),Keywords::BREAK);
         keywords.insert("class".to_string(),Keywords::CLASS);
         keywords.insert("continue".to_string(),Keywords::CONTINUE);
+        keywords.insert("cache".to_string(),Keywords::CACHE);
         keywords.insert("del".to_string(),Keywords::DEL);
         keywords.insert("elif".to_string(),Keywords::ELIF);
         keywords.insert("else".to_string(),Keywords::ELSE);
@@ -113,6 +115,18 @@ impl<'a> Lexer<'a>  {
         keywords.insert("while".to_string(),Keywords::WHILE);
 
         keywords.insert("yield".to_string(),Keywords::YIELD);
+
+        //TYPE KEYWORDS
+        keywords.insert("optim".to_string(),Keywords::OPTIM);
+        keywords.insert("matrix".to_string(),Keywords::MATRIX);
+        keywords.insert("vector".to_string(),Keywords::VECTOR);
+        keywords.insert("scalar".to_string(),Keywords::SCALAR);
+        keywords.insert("nan".to_string(),Keywords::NAN);
+        keywords.insert("inf".to_string(),Keywords::INF);
+        keywords.insert("nanf".to_string(),Keywords::NANF);
+        keywords.insert("inff".to_string(),Keywords::INFF);
+        keywords.insert("device".to_string(),Keywords::DEVICE);
+
 
         return keywords;
 

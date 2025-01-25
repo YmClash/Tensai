@@ -2,6 +2,7 @@ use num_bigint::BigInt;
 use std::fmt;
 use crate::lexer::tok::Keywords;
 use crate::parser::ast_1::{};
+use crate::parser::parser_error::ParserError;
 
 #[allow(dead_code)]
 #[derive(Debug, PartialEq,Clone)]
@@ -42,18 +43,6 @@ pub struct TensorMetadata {
 }
 
 
-#[allow(dead_code)]
-#[derive(Debug, Clone, PartialEq)]
-pub struct ParserError {
-    pub message: String,
-    pub position: Position,
-}
-#[allow(dead_code)]
-#[derive(Debug, Clone, PartialEq)]
-pub struct Position {
-    pub line: usize,
-    pub column: usize,
-}
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq)]
@@ -69,7 +58,7 @@ pub enum TensorType {
     Scalar,
     Vector,
     Matrix,
-    Tensor(usize),  // usize représente le rang du tenseur
+    Tensor(Vec<usize>),  // usize représente le rang du tenseur
 }
 #[derive(Debug, PartialEq, Clone)]
 pub enum TensorDataType {
@@ -100,14 +89,23 @@ pub struct TensorDeclaration {
     pub mutability: Mutability,
     pub device: Device,
 }
-#[allow(dead_code)]
-#[derive(Debug, Clone, PartialEq)]
+// #[allow(dead_code)]
+// #[derive(Debug, Clone, PartialEq)]
+// pub struct VariableDeclaration {
+//     pub name: String,
+//     pub data_type: Option<DataType>,
+//     pub visibility: Visibility,
+//     pub mutability: Mutability,
+//     pub value: Option<Expression>,
+// }
+
+#[derive(Clone)]
+#[derive(Debug, PartialEq)]
 pub struct VariableDeclaration {
     pub name: String,
-    pub data_type: DataType,
-    pub visibility: Visibility,
-    pub mutability: Mutability,
+    // pub variable_type: Option<DataType>,
     pub value: Option<Expression>,
+    pub mutability: Mutability,
 }
 
 #[allow(dead_code)]
@@ -174,7 +172,7 @@ pub enum Expression{
     FunctionCall(FunctionCall),
     TensorOperation(TensorOperation),
     TensorFunction(TensorFunction),
-    // IndexAccess(IndexAccess),
+    IndexAccess(ArrayAccess),
     ArraySlice(ArraySlice),
     MemberAccess(MemberAccess),
     LambdaExpression(LambdaExpression),
@@ -187,6 +185,17 @@ pub enum Expression{
     Array(ArrayExpression),
     ArrayRepeat(ArrayRepeatExpression),
 
+    Assignment(Assignment),
+
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Clone, PartialEq)]
+pub struct Assignment{
+    // pub left: Box<Expression>,
+    // pub right: Box<Expression>,
+    pub target: Box<Expression>,
+    pub value: Box<Expression>,
 }
 
 #[allow(dead_code)]
@@ -655,7 +664,7 @@ pub enum Literal {
 
 
 #[allow(dead_code)]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq,Eq)]
 pub enum DataType {
     Int,
     Float,
@@ -674,6 +683,15 @@ pub enum DataType {
     Named(String),
 
     SelfType,
+
+    Generic(GenericType),
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Clone,PartialEq,Eq)]
+pub struct GenericType{
+    pub base: String,           // Nom du type  "foo"
+    pub type_parameters: Vec<DataType>, //   Paramètres génériques <T,U>
 }
 
 #[allow(dead_code)]

@@ -97,15 +97,32 @@ pub enum Operators{
 #[allow(dead_code)]
 #[derive(Debug, PartialEq,Clone)]
 pub enum Keywords {
-    AND,AS,BREAK,BLOCK, CONST, CLASS, CONTINUE, CACHE, DEL, ELIF, ELSE, ENUM, EXCEPT,
-    EXPAND, FALSE, FINALLY, FN, FOR, GPU, IF, IMPL, IN, IS, LAMBDA, LET, LOOP, MATCH, MOD, NONE,
+    AND,AS,ASSERT,BREAK,BLOCK, CONST, CLASS, CONTINUE, CACHE, CPU,DEL, ELIF, ELSE, ENUM, EXCEPT,
+    EXPAND, FALSE, FINALLY, FN, FOR, GPU, IF, IMPL, IN, IS, LAMBDA, LET, LOOP, MATCH, MOD, MUT,NONE,
     NOT, ON, OR, PARALLEL, PUB, PASS,RETURN, SELF, STRUCT, TENSOR, TRUE, TYPE, TYPEOF, USE, WHERE, WHILE, YIELD,
 
     //TYPE KEYWORDS
     I32, I64, F32, F64, C32, C64, STR, CHAR, BOOL,
 
+    //
+    INT,FLOAT,COMPLEX,STRING, //TYPE KEYWORDS
+
     //gestion de memoire
-    USING,ALLOC,FREE
+    USING,ALLOC,FREE,
+
+    //new keywords
+    OPTIM,   //optimisation
+    MATRIX,  //matrice
+    VECTOR,  //vecteur
+    SCALAR,  //scalaire
+    NAN,     //not a number
+    INF,     //infini
+    NANF,    //not a number float
+    INFF,    //infini float
+    DEVICE,  //device
+
+
+
 
 }
 
