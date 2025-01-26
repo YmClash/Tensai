@@ -76,34 +76,39 @@ impl Parser{
             expr = match &token.token_type {
                 TokenType::DELIMITER(Delimiters::LSBRACKET) => {
                     self.advance(); // Consume [
-                    let expr = if let Some(token) = self.current_token() {
-                        match &token.token_type {
-                            TokenType::DELIMITER(Delimiters::COLON) => {
-                                let slice = self.parse_slice(Box::new(expr))?;
-                                self.consume(TokenType::DELIMITER(Delimiters::RSBRACKET))?;
-                                slice
-                            },
-                            _ => {
-                                let mut has_slice = false;
-                                let index = self.parse_expression(0)?;
-                                if self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) {
-                                    has_slice = true;
-                                }
-                                if has_slice {
-                                    self.parse_slice(Box::new(expr))?
-                                } else {
-                                    self.consume(TokenType::DELIMITER(Delimiters::RSBRACKET))?;
-                                    Expression::IndexAccess(ArrayAccess {
-                                        array: Box::new(expr),
-                                        index: Box::new(index)
-                                    })
-                                }
-                            }
-                        }
+                    let start = self.parse_expression(0)?;
+
+                    if self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) {
+                        self.advance(); // Consume :
+                        let end = if !self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) &&
+                            !self.check(&[TokenType::DELIMITER(Delimiters::RSBRACKET)]) {
+                            Some(Box::new(self.parse_expression(0)?))
+                        } else {
+                            None
+                        };
+
+                        let step = if self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) {
+                            self.advance();
+                            Some(Box::new(self.parse_expression(0)?))
+                        } else {
+                            None
+                        };
+
+                        self.consume(TokenType::DELIMITER(Delimiters::RSBRACKET))?;
+                        Expression::ArraySlice(ArraySlice {
+                            array: Box::new(expr),
+                            start: Some(Box::new(start)),
+                            end,
+                            step
+                        })
                     } else {
-                        return Err(ParserError::new(UnexpectedEndOfInput, self.current_position()));
-                    };
-                    expr
+                        // Simple index access
+                        self.consume(TokenType::DELIMITER(Delimiters::RSBRACKET))?;
+                        Expression::IndexAccess(ArrayAccess {
+                            array: Box::new(expr),
+                            index: Box::new(start)
+                        })
+                    }
                 },
 
             // expr = match &token.token_type {
@@ -439,13 +444,43 @@ impl Parser{
 
     }
 
-    fn parse_slice(&mut self, array: Box<Expression>) -> Result<Expression, ParserError> {
-        let start = if self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) {
-            None
-        } else {
-            Some(Box::new(self.parse_expression(0)?))
-        };
+    // fn parse_slice(&mut self, array: Box<Expression>) -> Result<Expression, ParserError> {
+    //
+    //     let start = if self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) {
+    //         None
+    //     } else {
+    //         Some(Box::new(self.parse_expression(0)?))
+    //     };
+    //
+    //     self.consume(TokenType::DELIMITER(Delimiters::COLON))?;
+    //
+    //     let end = if self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) ||
+    //         self.check(&[TokenType::DELIMITER(Delimiters::RSBRACKET)]) {
+    //         None
+    //     } else {
+    //         Some(Box::new(self.parse_expression(0)?))
+    //     };
+    //
+    //     let step = if self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) {
+    //         self.advance();
+    //         Some(Box::new(self.parse_expression(0)?))
+    //     } else {
+    //         None
+    //     };
+    //
+    //     self.consume(TokenType::DELIMITER(Delimiters::RSBRACKET))?;
+    //
+    //     Ok(Expression::ArraySlice(ArraySlice {
+    //         array,
+    //         start,
+    //         end,
+    //         step
+    //     }))
+    // }
 
+
+    fn parse_slice(&mut self, array: Box<Expression>) -> Result<Expression, ParserError> {
+        let index = self.parse_expression(0)?;
         self.consume(TokenType::DELIMITER(Delimiters::COLON))?;
 
         let end = if self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) ||
@@ -466,7 +501,7 @@ impl Parser{
 
         Ok(Expression::ArraySlice(ArraySlice {
             array,
-            start,
+            start: Some(Box::new(index)),
             end,
             step
         }))
