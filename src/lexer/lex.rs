@@ -249,6 +249,8 @@ impl<'a> Lexer<'a>  {
 
     fn lex_number(&mut self) -> TokenType {
         self.current_token_text.clear();
+
+
         if self.peek_char() == Some('0') {
             if let Some(next_char) = self.peek_next_char() {
                 if next_char == 'x' || next_char == 'X' {
@@ -503,48 +505,48 @@ impl<'a> Lexer<'a>  {
 
     }
     fn lex_comment(&mut self) -> TokenType {
-        // self.current_token_text.clear();
-        // let mut comment = String::new();
-        //
-        // // Skip the initial '#' or '/'
-        // self.next_char();
-        //
-        // match self.peek_char() {
-        //     // Pour les commentaires sur une ligne
-        //     // Some('/') /*| Some('#')*/ => {
-        //     //     self.next_char(); // Skip second '/' or '#'
-        //     //     while let Some(&ch) = self.source.peek() {
-        //     //         if ch == '\n' { break; }
-        //     //         comment.push(self.next_char().unwrap());
-        //     //     }
-        //     //     TokenType::COMMENT(comment)
-        //     // },
-        //     // Pour les commentaires multi-lignes
-        //     Some('*') => {
-        //         self.next_char(); // Skip '*'
-        //         let mut ended = false;
-        //         while let Some(&ch) = self.source.peek() {
-        //             if ch == '*' {
-        //                 self.next_char();
-        //                 if let Some('/') = self.peek_char() {
-        //                     self.next_char();
-        //                     ended = true;
-        //                     break;
-        //                 }
-        //                 comment.push('*');
-        //             } else {
-        //                 comment.push(self.next_char().unwrap());
-        //             }
-        //         }
-        //         if !ended {
-        //             self.create_error(LexerErrorType::UnterminatedComment)
-        //         } else {
-        //             TokenType::COMMENT(comment)
-        //         }
-        //     },
-        //     _ => TokenType::COMMENT(comment)
-        // }
-        todo!()
+        self.current_token_text.clear();
+        let mut comment = String::new();
+
+        // Skip the initial '#' or '/'
+        self.next_char();
+
+        match self.peek_char() {
+            // Pour les commentaires sur une ligne
+            // Some('/') /*| Some('#')*/ => {
+            //     self.next_char(); // Skip second '/' or '#'
+            //     while let Some(&ch) = self.source.peek() {
+            //         if ch == '\n' { break; }
+            //         comment.push(self.next_char().unwrap());
+            //     }
+            //     TokenType::COMMENT(comment)
+            // },
+            // Pour les commentaires multi-lignes
+            Some('*') => {
+                self.next_char(); // Skip '*'
+                let mut ended = false;
+                while let Some(&ch) = self.source.peek() {
+                    if ch == '*' {
+                        self.next_char();
+                        if let Some('/') = self.peek_char() {
+                            self.next_char();
+                            ended = true;
+                            break;
+                        }
+                        comment.push('*');
+                    } else {
+                        comment.push(self.next_char().unwrap());
+                    }
+                }
+                if !ended {
+                    self.create_error(LexerErrorType::UnterminatedComment)
+                } else {
+                    TokenType::COMMENT(comment)
+                }
+            },
+            _ => TokenType::COMMENT(comment)
+        }
+        // todo!()
     }
 
 
@@ -578,6 +580,45 @@ impl<'a> Lexer<'a>  {
             }
         }
         return tokens;
+    }
+
+
+    fn lex_complex_number(&mut self) -> TokenType {
+        self.current_token_text.clear();
+        let mut real_part = String::new();
+        let mut imag_part = String::new();
+        let mut has_imag = false;
+
+        while let Some(&ch) = self.source.peek() {
+            if ch.is_digit(10) || ch == '.' || ch == '+' || ch == '-' {
+                real_part.push(self.next_char().unwrap());
+            } else if ch == 'i' {
+                has_imag = true;
+                self.next_char();
+                break;
+            } else {
+                break;
+            }
+        }
+
+        if has_imag {
+            while let Some(&ch) = self.source.peek() {
+                if ch.is_digit(10) || ch == '.' {
+                    imag_part.push(self.next_char().unwrap());
+                } else {
+                    break;
+                }
+            }
+        }
+
+        if real_part.is_empty() || imag_part.is_empty() {
+            self.create_error(LexerErrorType::InvalidFloat(format!("{}+{}i", real_part, imag_part)))
+        } else {
+            TokenType::COMPLEX {
+                real: real_part.parse::<f64>().unwrap(),
+                imag: imag_part.parse::<f64>().unwrap(),
+            }
+        }
     }
 
 

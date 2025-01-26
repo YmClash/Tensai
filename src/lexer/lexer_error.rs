@@ -50,6 +50,15 @@ impl Position{
     fn move_left(&mut self){
         self.column -=1;
     }
+
+    fn range(start:&Position,end:&Position) -> String{
+        if start.line == end.line{
+            format!("line {}, column {}-{}",start.line,start.column,end.column)
+        }else {
+            format!("line {}, column {}-line {}, column {}",start.line,start.column,end.line,end.column)
+        }
+    }
+
 }
 
 impl Display for Position{

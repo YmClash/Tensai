@@ -70,7 +70,56 @@ impl Parser{
 
 
     pub fn parse_postfix_expression(&mut self) -> Result<Expression, ParserError>{
-        todo!()
+        let mut expr = self.parse_primary_expression()?;
+
+        loop {
+            if self.check(&[TokenType::DELIMITER(Delimiters::DOT)]){
+                self.advance();
+                let member_name = self.consume_identifier()?;
+
+                if self.check(&[TokenType::DELIMITER(Delimiters::LPAR)]){
+                    // Appel de méthode
+                    self.advance();
+                    let arguments = self.parse_arguments_list()?;
+                    self.consume(TokenType::DELIMITER(Delimiters::RPAR))?;
+                    println!("Arguments parsés : {:?}", arguments);
+                    expr = Expression::MethodCall(MethodCall{
+                        object: Box::new(expr),
+                        method: member_name,
+                        arguments,
+                    });
+                }else{
+                    // Acces à un membre
+                    println!("Nom du membre parsé : {}", member_name);
+                    expr = Expression::MemberAccess(MemberAccess{
+                        object: Box::new(expr),
+                        member: member_name,
+                    });
+                }
+            } else if self.check(&[TokenType::DELIMITER(Delimiters::LPAR)]) {
+                // Appel de Fonction
+                self.advance();
+                let arguments = self.parse_arguments_list()?;
+                self.consume(TokenType::DELIMITER(Delimiters::RPAR))?;
+                println!("Arguments parsés : {:?}", arguments);
+                expr = Expression::FunctionCall(FunctionCall{
+                    name: Box::new(expr),
+                    arguments,
+                });
+            } else if self.check(&[TokenType::DELIMITER(Delimiters::LSBRACKET)]) {
+                //Acces à un élément d'un tableau par indice
+                self.advance();
+                let index = self.parse_expression(0)?;
+                self.consume(TokenType::DELIMITER(Delimiters::RSBRACKET))?;
+                println!("Index parsé : {:?}", index);
+                expr = Expression::IndexAccess(ArrayAccess{
+                    array: Box::new(expr),
+                    index: Box::new(index),
+                });
+
+            } else { break; }
+        }
+        Ok(expr)
 
     }
 

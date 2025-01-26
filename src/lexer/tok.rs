@@ -12,7 +12,7 @@ pub enum TokenType{
     // INTEGER(IntegerType),
     // FLOAT(FloatType),
 
-    // COMPLEX(ComplexType),
+    COMPLEX{ real: f64, imag: f64},
 
     HEXADECIMAL {value: u64},
     STRING {value: String,kind: StringKind},
@@ -177,8 +177,8 @@ pub enum IntegerType{
 #[allow(dead_code)]
 #[derive(Debug, PartialEq,Clone)]
 pub enum ComplexType{
-    Complex32{real: f32, imag: f32},
-    Complex64{real: f64, imag: f64},
+    // Complex32{real: f32, imag: f32},
+    // Complex64{real: f64, imag: f64},
 }
 
 #[allow(dead_code)]

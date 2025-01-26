@@ -103,7 +103,7 @@ pub struct TensorDeclaration {
 #[derive(Debug, PartialEq)]
 pub struct VariableDeclaration {
     pub name: String,
-    // pub variable_type: Option<DataType>,
+    pub variable_type: Option<DataType>,
     pub value: Option<Expression>,
     pub mutability: Mutability,
 }

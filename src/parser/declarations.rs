@@ -14,15 +14,24 @@ impl Parser{
         let name = self.consume_identifier()?;
         println!("Nom de la variable {:?}",name);
 
+        let variable_type = if self.match_token(&[TokenType::DELIMITER(Delimiters::COLON)]) {
+            self.parse_type()?
+
+        } else {
+            DataType::Infer
+        };
+
         self.consume(TokenType::OPERATOR(Operators::EQUAL))?;
 
         let value = self.parse_expression(0)?;
 
-        self.consume(TokenType::DELIMITER(Delimiters::SEMICOLON))?;
+        // self.consume(TokenType::DELIMITER(Delimiters::SEMICOLON))?;
+        self.consume_seperator();
 
         println!("Fin de la déclaration de variable");
         Ok(ASTNode::Declaration(Declaration::VariableDeclaration(VariableDeclaration{
             name,
+            variable_type:Some(variable_type),
             mutability,
             value: Some(value),
         })))

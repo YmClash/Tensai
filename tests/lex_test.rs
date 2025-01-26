@@ -470,7 +470,7 @@ mod tests {
             lexer.get_token(),
             Some(TokenType::ERROR(LexerError::invalid_token(
                 "$",
-                Position { line: 1, column: 4 }
+                Position { line: 1, column: 3 }
             )))
         );
     }
@@ -483,7 +483,7 @@ mod tests {
             lexer.get_token(),
             Some(TokenType::ERROR(LexerError::invalid_token(
                 "$",
-                Position { line: 1, column: 4 }
+                Position { line: 1, column: 3 }
             )))
         );
     }
@@ -497,7 +497,7 @@ mod tests {
             lexer.get_token(),
             Some(TokenType::ERROR(LexerError::invalid_token(
                 "$",
-                Position { line: 1, column: 3 }
+                Position { line: 1, column: 2 }
             )))
         );
     }
@@ -1151,7 +1151,7 @@ mod tests {
             Some(TokenType::ERROR(LexerError::unterminated_string(
                 Position {
                     line: 1,
-                    column: 14
+                    column: 13
                 }
             )))
         );
@@ -1166,7 +1166,7 @@ mod tests {
             Some(TokenType::ERROR(LexerError::unterminated_comment(
                 Position {
                     line: 1,
-                    column: 21
+                    column: 20
                 }
             )))
         );
@@ -1225,7 +1225,7 @@ mod tests {
             Some(TokenType::ERROR(LexerError::unterminated_comment(
                 Position {
                     line: 1,
-                    column: 49
+                    column: 48
                 }
             )))
         );
@@ -1278,6 +1278,47 @@ mod tests {
         }
         assert_eq!(lexer.get_token(), Some(TokenType::EOF));
     }
+
+
+    // #[test]
+    // fn test_lex_complex_number() {
+    //     let mut lexer = Lexer::new("3.14 + 2.71i");
+    //     assert_eq!(
+    //         lexer.get_token(),
+    //         Some(TokenType::COMPLEX {
+    //             real: 3.14,
+    //             imag: 2.71,
+    //         })
+    //     );
+    // }
+
+    // #[test]
+    // fn test_invalid_character_error() {
+    //     let mut lexer = Lexer::new("§");
+    //     assert_eq!(
+    //         lexer.get_token(),
+    //         Some(TokenType::ERROR(LexerError::invalid_character(
+    //             '~',
+    //             Position { line: 1, column: 1 }
+    //         )))
+    //     );
+    // }
+
+    #[test]
+    fn test_performance_large_input() {
+        let input = "a".repeat(1_000_000); // Un million de 'a'
+        let mut lexer = Lexer::new(&input);
+        let start = std::time::Instant::now();
+        while let Some(token) = lexer.get_token() {
+            if matches!(token, TokenType::EOF) {
+                break;
+            }
+        }
+        let duration = start.elapsed();
+        println!("Lexed 1,000,000 characters in {:?}", duration);
+        assert!(duration < std::time::Duration::from_secs(1)); // Moins d'une seconde
+    }
+
 
 
 

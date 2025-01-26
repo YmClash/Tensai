@@ -34,7 +34,7 @@ impl Parser{
     }
 
     pub fn peek_next_token(&self) -> Option<&Token>{
-        self.tokens.get(self.current + 1)
+        self.tokens.get(self.current + 2)
 
     }
 
@@ -77,6 +77,7 @@ impl Parser{
                 //self.print_surrounding_tokens();
                 self.advance();
                 Ok(())
+                // Ok(token)
             } else {
                 println!("Tensaiii!!!!!!!!!!!!!!!!!!!! Erreur: token attendu {:?}, token actuel {:?}", expected, token);
                 Err(ParserError::new(UnexpectedToken, self.current_position()))
@@ -89,8 +90,9 @@ impl Parser{
     }
 
     pub fn consume_seperator(&mut self) {
-        println!("Braces Mode");
+
         if self.check(&[TokenType::DELIMITER(Delimiters::SEMICOLON)]) || self.check(&[TokenType::EOF]) {
+            // self.consume(TokenType::DELIMITER(Delimiters::SEMICOLON));
             let _ = self.consume(TokenType::DELIMITER(Delimiters::SEMICOLON));
         }
     }
@@ -117,12 +119,5 @@ impl Parser{
     //         self.advance();
     //     }
     // }
-
-
-
-
-
-
-
 
 }
