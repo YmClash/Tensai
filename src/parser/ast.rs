@@ -345,7 +345,7 @@ pub struct ArraySlice{
     pub start: Option<Box<Expression>>,
     pub end: Option<Box<Expression>>,
     pub step: Option<Box<Expression>>,
-    pub inclusive: bool,
+    // pub inclusive: bool,
 }
 
 #[allow(dead_code)]

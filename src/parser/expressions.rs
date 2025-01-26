@@ -1,5 +1,5 @@
 use crate::lexer::tok::{Delimiters, Keywords, Operators, TokenType};
-use crate::parser::ast::{ArrayAccess, Assignment, ASTNode, BinaryOperation, CompoundAssignment, CompoundOperator, DataType, Expression, FunctionCall, Literal, MemberAccess, MethodCall, Operator, Parameter, RangeExpression, UnaryOperation, UnaryOperator};
+use crate::parser::ast::{ArrayAccess, ArraySlice, Assignment, ASTNode, BinaryOperation, CompoundAssignment, CompoundOperator, DataType, Expression, FunctionCall, Literal, MemberAccess, MethodCall, Operator, Parameter, RangeExpression, UnaryOperation, UnaryOperator};
 use crate::parser::parser::Parser;
 use crate::parser::parser_error::ParserError;
 use crate::parser::parser_error::ParserErrorType::{ExpectedCloseParenthesis, UnexpectedEndOfInput, UnexpectedToken};
@@ -12,7 +12,8 @@ impl Parser{
     pub fn parse_expression(&mut self,precedence:u8) -> Result<Expression, ParserError>{
         println!("Début du parsing de l'expression");
 
-        let mut left = self.parse_unary_expression()?;
+        // let mut left = self.parse_unary_expression()?;
+        let mut left = self.parse_postfix_expression()?;
 
         if let Some(token) = self.current_token(){
             match &token.token_type {
@@ -68,59 +69,94 @@ impl Parser{
 
     }
 
-
-    pub fn parse_postfix_expression(&mut self) -> Result<Expression, ParserError>{
+    pub fn parse_postfix_expression(&mut self) -> Result<Expression, ParserError> {
         let mut expr = self.parse_primary_expression()?;
 
-        loop {
-            if self.check(&[TokenType::DELIMITER(Delimiters::DOT)]){
-                self.advance();
-                let member_name = self.consume_identifier()?;
+        while let Some(token) = self.current_token() {
+            expr = match &token.token_type {
+                TokenType::DELIMITER(Delimiters::LSBRACKET) => {
+                    self.advance(); // Consume [
+                    let expr = if let Some(token) = self.current_token() {
+                        match &token.token_type {
+                            TokenType::DELIMITER(Delimiters::COLON) => {
+                                let slice = self.parse_slice(Box::new(expr))?;
+                                self.consume(TokenType::DELIMITER(Delimiters::RSBRACKET))?;
+                                slice
+                            },
+                            _ => {
+                                let mut has_slice = false;
+                                let index = self.parse_expression(0)?;
+                                if self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) {
+                                    has_slice = true;
+                                }
+                                if has_slice {
+                                    self.parse_slice(Box::new(expr))?
+                                } else {
+                                    self.consume(TokenType::DELIMITER(Delimiters::RSBRACKET))?;
+                                    Expression::IndexAccess(ArrayAccess {
+                                        array: Box::new(expr),
+                                        index: Box::new(index)
+                                    })
+                                }
+                            }
+                        }
+                    } else {
+                        return Err(ParserError::new(UnexpectedEndOfInput, self.current_position()));
+                    };
+                    expr
+                },
 
-                if self.check(&[TokenType::DELIMITER(Delimiters::LPAR)]){
-                    // Appel de méthode
+            // expr = match &token.token_type {
+            //     TokenType::DELIMITER(Delimiters::LSBRACKET) => {
+            //         self.advance();
+            //         let index = self.parse_expression(0)?;
+            //         // self.expect_token(&TokenType::DELIMITER(Delimiters::RSBRACKET))?;
+            //         self.consume(TokenType::DELIMITER(Delimiters::RSBRACKET))?;
+            //         Expression::IndexAccess(ArrayAccess {
+            //             array: Box::new(expr),
+            //             index: Box::new(index)
+            //         })
+            //     },
+                TokenType::DELIMITER(Delimiters::LPAR) => {
                     self.advance();
                     let arguments = self.parse_arguments_list()?;
+                    // self.expect_token(&TokenType::DELIMITER(Delimiters::RPAR))?;
                     self.consume(TokenType::DELIMITER(Delimiters::RPAR))?;
-                    println!("Arguments parsés : {:?}", arguments);
-                    expr = Expression::MethodCall(MethodCall{
-                        object: Box::new(expr),
-                        method: member_name,
-                        arguments,
-                    });
-                }else{
-                    // Acces à un membre
-                    println!("Nom du membre parsé : {}", member_name);
-                    expr = Expression::MemberAccess(MemberAccess{
-                        object: Box::new(expr),
-                        member: member_name,
-                    });
-                }
-            } else if self.check(&[TokenType::DELIMITER(Delimiters::LPAR)]) {
-                // Appel de Fonction
-                self.advance();
-                let arguments = self.parse_arguments_list()?;
-                self.consume(TokenType::DELIMITER(Delimiters::RPAR))?;
-                println!("Arguments parsés : {:?}", arguments);
-                expr = Expression::FunctionCall(FunctionCall{
-                    name: Box::new(expr),
-                    arguments,
-                });
-            } else if self.check(&[TokenType::DELIMITER(Delimiters::LSBRACKET)]) {
-                //Acces à un élément d'un tableau par indice
-                self.advance();
-                let index = self.parse_expression(0)?;
-                self.consume(TokenType::DELIMITER(Delimiters::RSBRACKET))?;
-                println!("Index parsé : {:?}", index);
-                expr = Expression::IndexAccess(ArrayAccess{
-                    array: Box::new(expr),
-                    index: Box::new(index),
-                });
-
-            } else { break; }
+                    Expression::FunctionCall(FunctionCall {
+                        name: Box::new(expr),
+                        arguments
+                    })
+                },
+                TokenType::DELIMITER(Delimiters::DOT) => {
+                    self.advance();
+                    if let Some(TokenType::IDENTIFIER { name }) = self.current_token().map(|t| &t.token_type) {
+                        let name = name.clone();
+                        self.advance();
+                        if self.check(&[TokenType::DELIMITER(Delimiters::LPAR)]) {
+                            self.advance();
+                            let arguments = self.parse_arguments_list()?;
+                            // self.expect_token(&TokenType::DELIMITER(Delimiters::RPAR))?;
+                            self.consume(TokenType::DELIMITER(Delimiters::RPAR))?;
+                            Expression::MethodCall(MethodCall {
+                                object: Box::new(expr),
+                                method: name,
+                                arguments
+                            })
+                        } else {
+                            Expression::MemberAccess(MemberAccess {
+                                object: Box::new(expr),
+                                member: name
+                            })
+                        }
+                    } else {
+                        return Err(ParserError::new(UnexpectedToken, self.current_position()));
+                    }
+                },
+                _ => break,
+            };
         }
-        Ok(expr)
 
+        Ok(expr)
     }
 
     fn parse_unary_expression(&mut self) -> Result<Expression, ParserError> {
@@ -329,25 +365,29 @@ impl Parser{
 
 
 
-
-
-    pub fn parse_arguments_list(&mut self) -> Result<Vec<Expression>, ParserError> {
+    fn parse_arguments_list(&mut self) -> Result<Vec<Expression>, ParserError> {
         println!("Début du parsing de la liste d'arguments");
         let mut arguments = Vec::new();
-        if self.check(&[TokenType::DELIMITER(Delimiters::RPAR)]){
+
+        if self.check(&[TokenType::DELIMITER(Delimiters::RPAR)]) {
+            self.advance();
             return Ok(arguments);
         }
-        loop {
-            let argument = self.parse_expression(0);
-            arguments.push(argument?);
 
-            if !self.match_token(&[TokenType::DELIMITER(Delimiters::COMMA)]) {
+        loop {
+            // let argument = self.parse_expression(0)?;
+            // arguments.push(argument);
+            arguments.push(self.parse_expression(0)?);
+
+            if !self.check(&[TokenType::DELIMITER(Delimiters::COMMA)]) {
                 break;
             }
+            self.advance(); // Consommer la virgule
         }
-        println!("Arguments liste parsés : {:?}", arguments);
-        Ok(arguments)
+        // self.consume(TokenType::DELIMITER(Delimiters::RPAR))?;
+        println!("Fin du parsing de la liste d'arguments");
 
+        Ok(arguments)
     }
 
     pub fn parse_parameter_list(&mut self) -> Result<Vec<Parameter>, ParserError> {
@@ -397,19 +437,40 @@ impl Parser{
             false
         }
 
-        // let chars: Vec<char> = s.chars().collect();
-        // if chars.len() != 3 {
-        //     return false;
-        // }
-        //
-        // return chars[0] == '\'' &&
-        //     chars[2] == '\'' &&
-        //     chars[1].is_ascii();
-
     }
 
+    fn parse_slice(&mut self, array: Box<Expression>) -> Result<Expression, ParserError> {
+        let start = if self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) {
+            None
+        } else {
+            Some(Box::new(self.parse_expression(0)?))
+        };
 
+        self.consume(TokenType::DELIMITER(Delimiters::COLON))?;
 
+        let end = if self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) ||
+            self.check(&[TokenType::DELIMITER(Delimiters::RSBRACKET)]) {
+            None
+        } else {
+            Some(Box::new(self.parse_expression(0)?))
+        };
+
+        let step = if self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) {
+            self.advance();
+            Some(Box::new(self.parse_expression(0)?))
+        } else {
+            None
+        };
+
+        self.consume(TokenType::DELIMITER(Delimiters::RSBRACKET))?;
+
+        Ok(Expression::ArraySlice(ArraySlice {
+            array,
+            start,
+            end,
+            step
+        }))
+    }
 
 
 
