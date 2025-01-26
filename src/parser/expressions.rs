@@ -1,5 +1,5 @@
 use crate::lexer::tok::{Delimiters, Keywords, Operators, TokenType};
-use crate::parser::ast::{ArrayAccess, ArraySlice, Assignment, ASTNode, BinaryOperation, CompoundAssignment, CompoundOperator, DataType, Expression, FunctionCall, Literal, MemberAccess, MethodCall, Operator, Parameter, RangeExpression, UnaryOperation, UnaryOperator};
+use crate::parser::ast::{ArrayAccess, ArraySlice, Assignment, ASTNode, BinaryOperation, CompoundAssignment, CompoundOperator, DataType, Expression, FunctionCall, Literal, MemberAccess, MethodCall, Operator, Parameter, RangeExpression, RangeSlice, UnaryOperation, UnaryOperator};
 use crate::parser::parser::Parser;
 use crate::parser::parser_error::ParserError;
 use crate::parser::parser_error::ParserErrorType::{ExpectedCloseParenthesis, UnexpectedEndOfInput, UnexpectedToken};
@@ -75,61 +75,78 @@ impl Parser{
         while let Some(token) = self.current_token() {
             expr = match &token.token_type {
                 TokenType::DELIMITER(Delimiters::LSBRACKET) => {
-                    self.advance(); // Consume [
-
-                    // Check for empty start
-                    let start = if self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) {
-                        None
-                    } else {
-                        Some(Box::new(self.parse_expression(0)?))
-                    };
+                    self.advance();
+                    let range_expr = self.parse_expression(0)?;
 
                     if self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) {
-                        self.advance(); // Consume :
-                        let end = if !self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) &&
-                            !self.check(&[TokenType::DELIMITER(Delimiters::RSBRACKET)]) {
-                            Some(Box::new(self.parse_expression(0)?))
-                        } else {
-                            None
-                        };
-
-                        let step = if self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) {
-                            self.advance();
-                            Some(Box::new(self.parse_expression(0)?))
-                        } else {
-                            None
-                        };
-
+                        self.advance();
+                        let step = Some(Box::new(self.parse_expression(0)?));
                         self.consume(TokenType::DELIMITER(Delimiters::RSBRACKET))?;
-                        Expression::ArraySlice(ArraySlice {
-                            array: Box::new(expr),
-                            start,
-                            end,
-                            step
-                        })
-                    } else if let Some(start) = start {
-                        // Simple index access
+
+                        match range_expr {
+                            Expression::RangeExpression(range) => {
+                                Expression::RangeSlice(RangeSlice {
+                                    array: Box::new(expr),
+                                    range: Box::new(range),
+                                    step
+                                })
+                            },
+                            _ => return Err(ParserError::new(UnexpectedToken, self.current_position()))
+                        }
+                    } else {
                         self.consume(TokenType::DELIMITER(Delimiters::RSBRACKET))?;
                         Expression::IndexAccess(ArrayAccess {
                             array: Box::new(expr),
-                            index: start
+                            index: Box::new(range_expr)
                         })
-                    } else {
-                        return Err(ParserError::new(UnexpectedToken, self.current_position()));
                     }
                 },
-
             // expr = match &token.token_type {
             //     TokenType::DELIMITER(Delimiters::LSBRACKET) => {
-            //         self.advance();
-            //         let index = self.parse_expression(0)?;
-            //         // self.expect_token(&TokenType::DELIMITER(Delimiters::RSBRACKET))?;
-            //         self.consume(TokenType::DELIMITER(Delimiters::RSBRACKET))?;
-            //         Expression::IndexAccess(ArrayAccess {
-            //             array: Box::new(expr),
-            //             index: Box::new(index)
-            //         })
+            //         self.advance(); // Consume [
+            //
+            //         // Check for empty start
+            //         let start = if self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) {
+            //             None
+            //         } else {
+            //             Some(Box::new(self.parse_expression(0)?))
+            //         };
+            //
+            //         if self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) {
+            //             self.advance(); // Consume :
+            //             let end = if !self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) &&
+            //                 !self.check(&[TokenType::DELIMITER(Delimiters::RSBRACKET)]) {
+            //                 Some(Box::new(self.parse_expression(0)?))
+            //             } else {
+            //                 None
+            //             };
+            //
+            //             let step = if self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) {
+            //                 self.advance();
+            //                 Some(Box::new(self.parse_expression(0)?))
+            //             } else {
+            //                 None
+            //             };
+            //
+            //             self.consume(TokenType::DELIMITER(Delimiters::RSBRACKET))?;
+            //             Expression::ArraySlice(ArraySlice {
+            //                 array: Box::new(expr),
+            //                 start,
+            //                 end,
+            //                 step
+            //             })
+            //         } else if let Some(start) = start {
+            //             // Simple index access
+            //             self.consume(TokenType::DELIMITER(Delimiters::RSBRACKET))?;
+            //             Expression::IndexAccess(ArrayAccess {
+            //                 array: Box::new(expr),
+            //                 index: start
+            //             })
+            //         } else {
+            //             return Err(ParserError::new(UnexpectedToken, self.current_position()));
+            //         }
             //     },
+
                 TokenType::DELIMITER(Delimiters::LPAR) => {
                     self.advance();
                     let arguments = self.parse_arguments_list()?;

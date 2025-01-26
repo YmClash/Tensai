@@ -174,6 +174,7 @@ pub enum Expression{
     TensorFunction(TensorFunction),
     IndexAccess(ArrayAccess),
     ArraySlice(ArraySlice),
+    RangeSlice(RangeSlice),
     MemberAccess(MemberAccess),
     LambdaExpression(LambdaExpression),
     TypeCast(TypeCast),
@@ -347,6 +348,16 @@ pub struct ArraySlice{
     pub step: Option<Box<Expression>>,
     // pub inclusive: bool,
 }
+
+#[allow(dead_code)]
+#[derive(Debug, Clone, PartialEq)]
+pub struct RangeSlice{
+    pub array:Box<Expression>,
+    pub range: Box<RangeExpression>,
+    pub step: Option<Box<Expression>>,
+}
+
+
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq)]
