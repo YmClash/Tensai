@@ -7,7 +7,7 @@ fn main() {
     println!("\n");
 
     // let code_sourde = r#"obj.data[start+ offset].proccess(x,y).data[index]"#;
-    let code_sourde = r#"array[1..10:2]"#;
+    let code_sourde = r#"array[:10]"#;
 
     let mut lexer = Lexer::new(code_sourde);
     let tokens = lexer.tokenize();
