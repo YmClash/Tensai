@@ -74,36 +74,6 @@ impl Parser{
 
         while let Some(token) = self.current_token() {
 
-            // expr = match &token.token_type {
-            //     TokenType::DELIMITER(Delimiters::LSBRACKET) => {
-            //         self.advance();
-            //         let range_expr = self.parse_expression(0)?;
-            //
-            //         if self.check(&[TokenType::DELIMITER(Delimiters::COLON)]) {
-            //             self.advance();
-            //             let step = Some(Box::new(self.parse_expression(0)?));
-            //             self.consume(TokenType::DELIMITER(Delimiters::RSBRACKET))?;
-            //
-            //             match range_expr {
-            //                 Expression::RangeExpression(range) => {
-            //                     Expression::RangeSlice(RangeSlice {
-            //                         array: Box::new(expr),
-            //                         range: Box::new(range),
-            //                         step
-            //                     })
-            //                 },
-            //                 _ => return Err(ParserError::new(UnexpectedToken, self.current_position()))
-            //             }
-            //         } else {
-            //             self.consume(TokenType::DELIMITER(Delimiters::RSBRACKET))?;
-            //             Expression::IndexAccess(ArrayAccess {
-            //                 array: Box::new(expr),
-            //                 index: Box::new(range_expr)
-            //             })
-            //         }
-            //     },
-
-
             expr = match &token.token_type {
                 TokenType::DELIMITER(Delimiters::LSBRACKET) => {
                     self.advance(); // Consume [

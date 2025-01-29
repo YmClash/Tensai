@@ -39,6 +39,23 @@ impl Parser{
     }
 
     pub fn tensor_declaration(&mut self, visibility: Visibility) -> Result<ASTNode, ParserError> {
+        println!("Début de la déclaration de tenseur");
+        self.consume(TokenType::KEYWORD(Keywords::TENSOR))?;
+
+        let name = self.consume_identifier()?;
+
+        let data_type = if self.match_token(&[TokenType::OPERATOR(Operators::LESS)])||self.match_token(&[TokenType::DELIMITER(Delimiters::COLON)]) {
+            self.parse_type()?
+        } else {
+            DataType::Infer
+        };
+
+        self.consume(TokenType::OPERATOR(Operators::EQUAL))?;
+
+        let value = self.parse_expression(0)?;
+
+
+
 
         todo!()
 
