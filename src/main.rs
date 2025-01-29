@@ -7,12 +7,11 @@ fn main() {
     println!("\n");
 
     // let code_sourde = r#"obj.data[start+ offset].proccess(x,y).data[index]"#;
-    let code_sourde1 = r#"array[1..10:2];array[:10]"#;
+    let code_sourde1 = r#"array[1..10:2] array[:10]"#;
     let code_sourde2 = r#"array[:10]"#;
     let code_sourde3 = r#"array[1:]"#;
     let code_sourde4 = r#"array[1:10]"#;
-    let code_sourde5 = r#"momo
-"#;
+    let code_sourde5 = r#"tensor A = 10"#;
 
     let mut lexer = Lexer::new(code_sourde5);
     let tokens = lexer.tokenize();
