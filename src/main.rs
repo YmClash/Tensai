@@ -13,7 +13,7 @@ fn main() {
     let code_sourde4 = r#"array[1:10]"#;
     let code_sourde5 = r#"tensor A = 10"#;
 
-    let mut lexer = Lexer::new(code_sourde5);
+    let mut lexer = Lexer::new(code_sourde4);
     let tokens = lexer.tokenize();
 
     for (i,tok) in tokens.iter().enumerate(){
