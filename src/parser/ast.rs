@@ -82,12 +82,13 @@ pub enum TensorDimension {
 #[derive(Debug, Clone, PartialEq)]
 pub struct TensorDeclaration {
     pub name: String,
-    pub shape: TensorDimension,
-    pub data_type: TensorDataType,
-    pub layout: TensorLayout,
-    pub visibility: Visibility,
+    // pub shape: TensorDimension,
+    // pub data_type: TensorDataType,
+    // pub layout: TensorLayout,
+    // pub visibility: Visibility,
+    pub value: Expression,
     pub mutability: Mutability,
-    pub device: Device,
+    // pub device: Device,
 }
 // #[allow(dead_code)]
 // #[derive(Debug, Clone, PartialEq)]
