@@ -55,7 +55,9 @@ pub enum ParserErrorType{
 
     UnexpectedEndOfInput,
 
-    ExpectedCloseParenthesis
+    ExpectedCloseParenthesis,
+    ExpectedCommaOrCloseBrace,
+    InvalidShapeValue
 
 }
 
@@ -116,6 +118,10 @@ impl Display for ParserErrorType {
             ParserErrorType::UnexpectedEndOfInput => write!(f, "Unexpected End Of Input"),
             ParserErrorType::ExpectedCloseParenthesis => write!(f, "Expected Close Parenthesis"),
 
+            ParserErrorType::ExpectedCommaOrCloseBrace => write!(f, "Expected Comma Or Close Brace"),
+            ParserErrorType::InvalidShapeValue => write!(f, "Invalid Shape Value"),
+
+
 
         }
     }
@@ -151,6 +157,9 @@ impl  ParserError{
             ParserErrorType::UnexpectedEndOfInput => "Unexpected end of input".to_string(),
 
             ParserErrorType::ExpectedCloseParenthesis => "Expected close parenthesis".to_string(),
+
+            ParserErrorType::ExpectedCommaOrCloseBrace => "Expected comma or close brace".to_string(),
+            ParserErrorType::InvalidShapeValue => "Invalid shape value".to_string(),
 
 
         };

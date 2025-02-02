@@ -34,6 +34,23 @@ impl Parser{
                 self.advance(); // Consomme le token `char`
                 Ok(DataType::Char)
             }
+            TokenType::KEYWORD(Keywords::I32) => {
+                self.advance(); // Consomme le token `i32`
+                Ok(DataType::I32)
+            }
+            TokenType::KEYWORD(Keywords::I64) => {
+                self.advance(); // Consomme le token `i64`
+                Ok(DataType::I64)
+            }
+            TokenType::KEYWORD(Keywords::F32) => {
+                self.advance(); // Consomme le token `f32`
+                Ok(DataType::F32)
+            }
+            TokenType::KEYWORD(Keywords::F64) => {
+                self.advance(); // Consomme le token `f64`
+                Ok(DataType::F64)
+            }
+
             TokenType::IDENTIFIER { name } => {
                 let base_name = name.clone();
                 self.advance();

@@ -19,7 +19,8 @@ pub enum ASTNode{
 #[derive(Debug, PartialEq, Clone)]
 pub enum Device {
     CPU,
-    GPU(usize),  // usize pour l'index du GPU
+    // GPU(usize),  // usize pour l'index du GPU
+    GPU,
     TPU,
     Custom(String),
 }
@@ -82,23 +83,33 @@ pub enum TensorDimension {
 #[derive(Debug, Clone, PartialEq)]
 pub struct TensorDeclaration {
     pub name: String,
+    // pub decorators: Vec<Decorator>,
     // pub shape: TensorDimension,
-    // pub data_type: TensorDataType,
+    pub shape: Option<Shape>,
+    pub dtype: DataType,
     // pub layout: TensorLayout,
-    // pub visibility: Visibility,
+    pub visibility: Visibility,
+    // pub value: Option<Expression>,
     pub value: Expression,
     pub mutability: Mutability,
     // pub device: Device,
 }
-// #[allow(dead_code)]
-// #[derive(Debug, Clone, PartialEq)]
-// pub struct VariableDeclaration {
-//     pub name: String,
-//     pub data_type: Option<DataType>,
-//     pub visibility: Visibility,
-//     pub mutability: Mutability,
-//     pub value: Option<Expression>,
-// }
+
+#[allow(dead_code)]
+#[derive(Debug, Clone, PartialEq)]
+pub enum Decorator{
+    Shape(Vec<usize>),
+    Gpu{device: Device},
+    Parallel,
+
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Clone, PartialEq)]
+pub struct Shape{
+    pub shape: Vec<usize>,
+}
+
 
 #[derive(Clone)]
 #[derive(Debug, PartialEq)]
@@ -184,7 +195,7 @@ pub enum Expression{
     MethodCall(MethodCall),
     CompoundAssignment(CompoundAssignment),
     RangeExpression(RangeExpression),
-    Array(ArrayExpression),
+    Array(Box<ArrayExpression>),
     ArrayRepeat(ArrayRepeatExpression),
 
     Assignment(Assignment),
@@ -294,7 +305,9 @@ pub struct CompoundAssignment{
 #[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq)]
 pub struct ArrayExpression{
+    // pub elements: Vec<Vec<Expression>>,
     pub elements: Vec<Expression>,
+    // pub elements: Expression,
 }
 #[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq)]
@@ -552,8 +565,9 @@ pub struct IfStatement {
 #[derive(Clone, Debug, PartialEq)]
 pub struct WhileStatement {
     pub condition: Expression,
-    pub body: Body,
-    //pub body: Body,
+    // pub body: Body,
+    pub body: Vec<ASTNode>,
+
 }
 
 #[allow(dead_code)]
@@ -561,15 +575,15 @@ pub struct WhileStatement {
 pub struct ForStatement {
     pub iterator: String,
     pub iterable: Expression,
-    pub body: Body,
-    //pub body: Body,
+    // pub body: Body,
+    pub body: Vec<ASTNode>,
 }
 #[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq)]
 pub struct LoopStatement {
-    pub label: Option<String>,
-    pub body: Body,
-    //pub body: Body,
+    // pub label: Option<String>,
+    // pub body: Body,
+    pub body: Vec<ASTNode>,
 }
 
 
@@ -697,6 +711,11 @@ pub enum DataType {
     SelfType,
 
     Generic(GenericType),
+    I32,
+    I64,
+    F32,
+    F64,
+
 }
 
 #[allow(dead_code)]

@@ -1,5 +1,5 @@
 use crate::lexer::tok::{Delimiters, Keywords, Operators, TokenType};
-use crate::parser::ast::{ArrayAccess, ArraySlice, Assignment, ASTNode, BinaryOperation, CompoundAssignment, CompoundOperator, DataType, Expression, FunctionCall, Literal, MemberAccess, MethodCall, Operator, Parameter, RangeExpression, RangeSlice, UnaryOperation, UnaryOperator};
+use crate::parser::ast::{ArrayAccess, ArrayExpression, ArraySlice, Assignment, ASTNode, BinaryOperation, CompoundAssignment, CompoundOperator, DataType, Expression, FunctionCall, Literal, MemberAccess, MethodCall, Operator, Parameter, RangeExpression, RangeSlice, UnaryOperation, UnaryOperator};
 use crate::parser::parser::Parser;
 use crate::parser::parser_error::ParserError;
 use crate::parser::parser_error::ParserErrorType::{ExpectedCloseParenthesis, UnexpectedEndOfInput, UnexpectedToken};
@@ -221,6 +221,12 @@ impl Parser{
 
     fn parse_primary_expression(&mut self) -> Result<Expression, ParserError> {
         println!("Début du parsing de l'expression primaire");
+
+        if self.check(&[TokenType::DELIMITER(Delimiters::LSBRACKET)]){
+            let elements = self.parse_array_or_matrix_literal()?;
+            return Ok(elements);
+        }
+
         if let Some(token) = self.current_token() {
             let expr = match &token.token_type{
                 TokenType::IDENTIFIER { name } => {
@@ -368,7 +374,7 @@ impl Parser{
 
 
 
-    fn parse_arguments_list(&mut self) -> Result<Vec<Expression>, ParserError> {
+    pub fn parse_arguments_list(&mut self) -> Result<Vec<Expression>, ParserError> {
         println!("Début du parsing de la liste d'arguments");
         let mut arguments = Vec::new();
 

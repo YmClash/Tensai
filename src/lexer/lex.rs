@@ -107,6 +107,7 @@ impl<'a> Lexer<'a>  {
         keywords.insert("struct".to_string(),Keywords::STRUCT);
         keywords.insert("tensor".to_string(),Keywords::TENSOR);
         keywords.insert("True".to_string(),Keywords::TRUE);
+        keywords.insert("tpu".to_string(),Keywords::TPU);
         keywords.insert("type".to_string(),Keywords::TYPE);
         keywords.insert("typeof".to_string(),Keywords::TYPEOF);
         keywords.insert("use".to_string(),Keywords::USE);
@@ -126,6 +127,12 @@ impl<'a> Lexer<'a>  {
         keywords.insert("nanf".to_string(),Keywords::NANF);
         keywords.insert("inff".to_string(),Keywords::INFF);
         keywords.insert("device".to_string(),Keywords::DEVICE);
+        keywords.insert("shape".to_string(),Keywords::SHAPE);
+
+        keywords.insert("i32".to_string(),Keywords::I32);
+        keywords.insert("i64".to_string(),Keywords::I64);
+        keywords.insert("f32".to_string(),Keywords::F32);
+        keywords.insert("f64".to_string(),Keywords::F64);
 
 
         return keywords;
