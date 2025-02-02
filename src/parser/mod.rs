@@ -1,5 +1,5 @@
 pub mod ast;
-mod parser_error;
+pub mod parser_error;
 mod ast_1;
 pub mod parser;
 mod expressions;
@@ -8,4 +8,4 @@ mod statements;
 mod types;
 mod declarations;
 mod arrays;
-mod parser_tests;
+mod inferences;

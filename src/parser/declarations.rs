@@ -1,8 +1,8 @@
 use crate::lexer::tok::{Delimiters, Keywords, Operators, TokenType};
-use crate::parser::ast::{ArrayExpression, ASTNode, DataType, Declaration, Decorator, Device, Expression, FunctionDeclaration, Literal, Mutability, Parameter, ReturnStatement, Shape, Statement, TensorDeclaration, TensorDimension, TensorLayout, VariableDeclaration, Visibility};
+use crate::parser::ast::{ArrayExpression, ASTNode, DataType, Declaration, Device, Expression, FunctionDeclaration, Literal,  Parameter, ReturnStatement, Shape, Statement, TensorDeclaration, TensorDimension, TensorLayout, VariableDeclaration, Visibility};
 use crate::parser::parser::Parser;
 use crate::parser::parser_error::ParserError;
-use crate::parser::parser_error::ParserErrorType::{ExpectedParameterName, InvalidShapeValue, UnexpectedEndOfInput, UnexpectedToken, ValidationError};
+use crate::parser::parser_error::ParserErrorType::{ InvalidShapeValue, UnexpectedEndOfInput, UnexpectedToken,};
 
 impl Parser{
 
@@ -70,6 +70,9 @@ impl Parser{
         let device = if self.match_token(&[TokenType::OPERATOR(Operators::AT)]){
             Some(self.parse_device()?)
         }else { None };
+
+
+        self.consume_seperator();
 
 
         Ok(ASTNode::Declaration(Declaration::TensorDeclaration(TensorDeclaration{
@@ -196,53 +199,34 @@ impl Parser{
         })))
     }
 
-    pub fn parse_return_statement(&mut self) -> Result<ASTNode, ParserError> {
-        println!("Début du parsing de l'instruction de retour");
-        self.consume(TokenType::KEYWORD(Keywords::RETURN))?;
-        let value = if !self.match_token(&[TokenType::NEWLINE, TokenType::EOF]) {
-            Some(self.parse_expression(0)?)
-        } else {
-            None
-        };
-        println!("Valeur de retour parsée : {:?}", value);
-        println!("Fin du parsing de l'instruction de retour OK!!!!!!!!!!!!!!");
-        Ok(ASTNode::Statement(Statement::ReturnStatement(ReturnStatement{
-            value,
-        })))
-
-
-    }
-
     pub fn parse_function_parameters(&mut self) -> Result<Vec<Parameter>, ParserError> {
         println!("Début du parsing des paramètres de fonction");
         let mut parameters = Vec::new();
 
-        if self.check(&[TokenType::DELIMITER(Delimiters::RPAR)]){
-            // pas de paramètres
+        // Vérifier s'il n'y a pas de paramètres
+        if self.check(&[TokenType::DELIMITER(Delimiters::RPAR)]) {
             return Ok(parameters);
         }
 
-        if !self.match_token(&[TokenType::DELIMITER(Delimiters::RPAR)]) {
-            loop {
-                //let name = self.consume_parameter_name()?;
-                let name = self.consume_identifier()?;
-                println!("Nom du paramètre parsé : {}", name);
-                self.consume(TokenType::DELIMITER(Delimiters::COLON))?;
-                let param_type = self.parse_type()?;
-                println!("Type du paramètre parsé : {:?}", param_type);
+        loop {
+            // Parser le nom du paramètre
+            let name = self.consume_identifier()?;
+            println!("Nom du paramètre parsé : {}", name);
 
-                parameters.push(Parameter { name, parameter_type: param_type });
+            // Parser le type du paramètre
+            self.consume(TokenType::DELIMITER(Delimiters::COLON))?;
+            let parameter_type = self.parse_type()?;
+            println!("Type du paramètre parsé : {:?}", parameter_type);
 
-                if self.match_token(&[TokenType::DELIMITER(Delimiters::COMMA)]) {
-                    continue;
-                } else if self.check(&[TokenType::DELIMITER(Delimiters::RPAR)]) {
-                    break;
-                }else {
-                    println!("Erreur lors du parsing des paramètres, token actuel : {:?}", self.current_token());
-                    return Err(ParserError::new(ExpectedParameterName, self.current_position()));
-                }
+            // Ajouter le paramètre à la liste
+            parameters.push(Parameter { name, parameter_type });
+
+            // Vérifier s'il y a d'autres paramètres
+            if !self.match_token(&[TokenType::DELIMITER(Delimiters::COMMA)]) {
+                break;
             }
         }
+
         println!("Paramètres parsés : {:?}", parameters);
         Ok(parameters)
     }

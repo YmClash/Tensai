@@ -225,7 +225,7 @@ impl Parser{
         }
 
         if !dimensions.is_empty() {
-            dimensions.insert(0, (all_elements.len() / dimensions[0]));
+            dimensions.insert(0, all_elements.len() / dimensions[0]);
         }
 
         Ok(Expression::Array(Box::new(ArrayExpression {

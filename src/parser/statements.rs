@@ -3,7 +3,7 @@
 
 //  ici on vas parser  les statement
 
-use crate::parser::ast::{Body, BreakStatement, DataType, ForStatement, IfStatement, LoopStatement, Statement, VariableDeclaration, WhileStatement};
+use crate::parser::ast::{Body, BreakStatement, DataType, ElifStatement, ForStatement, IfStatement, LoopStatement, ReturnStatement, Statement, VariableDeclaration, WhileStatement};
 use crate::lexer::tok::{Delimiters, Keywords, Operators, TokenType};
 use crate::parser::ast::{ASTNode, Mutability, Visibility};
 // use crate::parser::ast::ASTNode::Body;
@@ -23,6 +23,8 @@ impl Parser{
         }else if self.check(&[TokenType::KEYWORD(Keywords::FN)]) {
             let visibility = visibility.unwrap_or(Visibility::Private);
             self.parse_function_declaration(visibility)
+        }else if self.check(&[TokenType::KEYWORD(Keywords::RETURN)]){
+            self.parse_return_statement()
         }
         else if self.check(&[TokenType::KEYWORD(Keywords::IF)]) {
             self.parse_if_statement()
@@ -70,66 +72,76 @@ impl Parser{
             Ok(Visibility::Private)
         }
     }
-    pub fn parse_block(&mut self) -> Result<Vec<ASTNode>, ParserError> {
-        println!("Parsing braced block");
-        self.consume(TokenType::DELIMITER(Delimiters::LCURBRACE))?;
-        let mut statements = Vec::new();
 
-        while !self.check(&[TokenType::DELIMITER(Delimiters::RCURBRACE), TokenType::EOF]) {
+
+    pub fn parse_return_statement(&mut self) -> Result<ASTNode, ParserError> {
+        println!("Début du parsing de l'instruction de retour");
+        self.consume(TokenType::KEYWORD(Keywords::RETURN))?;
+        let value = if !self.match_token(&[TokenType::NEWLINE, TokenType::EOF]) {
+            Some(self.parse_expression(0)?)
+        } else {
+            None
+        };
+        println!("Valeur de retour parsée : {:?}", value);
+        println!("Fin du parsing de l'instruction de retour OK!!!!!!!!!!!!!!");
+        Ok(ASTNode::Statement(Statement::ReturnStatement(ReturnStatement{
+            value,
+        })))
+
+
+    }
+
+    pub fn parse_block(&mut self) -> Result<Vec<ASTNode>, ParserError> {
+        println!("Début du parsing du bloc");
+        self.consume(TokenType::DELIMITER(Delimiters::LCURBRACE))?;
+
+        let mut statements = Vec::new();
+        while !self.check(&[TokenType::DELIMITER(Delimiters::RCURBRACE)]) {
             let stmt = self.parse_statement()?;
-            statements.push(stmt);
-            // je vais ajoute un code qui  m'aiderai  a  parse le  body de parse_declaration_body
-            // if self.check(&[TokenType::DELIMITER(Delimiters::COMMA)]){
-            //     self.consume(TokenType::DELIMITER(Delimiters::COMMA))?;
-            // }else if !self.check(&[TokenType::DELIMITER(Delimiters::RCURBRACE)]) {
-            //     return Err(ParserError::new(ExpectedCommaOrCloseBrace, self.current_position()));
+            statements.push(stmt.clone());
+
+            // Vérifier la présence du point-virgule pour les expressions
+            // if let ASTNode::Expression(_) = stmt {
+            //     self.consume(TokenType::DELIMITER(Delimiters::SEMICOLON))?;
             // }
         }
+
         self.consume(TokenType::DELIMITER(Delimiters::RCURBRACE))?;
+        println!("Fin du parsing du bloc");
         Ok(statements)
         // Ok(Body::Body(statements))
-
     }
 
     pub fn parse_if_statement(&mut self) -> Result<ASTNode, ParserError> {
         println!("Début du parsing de l'instruction if");
-
         self.consume(TokenType::KEYWORD(Keywords::IF))?;
         let condition = self.parse_expression(0)?;
-        //let then_block = self.parse_body_block()?;; // block_expression
-        let elif_block = self.parse_block()?;
+        let then_block = self.parse_block()?;
 
-        let else_block = if self.check(&[TokenType::KEYWORD(Keywords::ELIF)]) {
-            // self.advance();
+        let mut elif_branches = Vec::new();
+        while self.check(&[TokenType::KEYWORD(Keywords::ELIF)]) {
             self.consume(TokenType::KEYWORD(Keywords::ELIF))?;
-
             let elif_condition = self.parse_expression(0)?;
             let elif_then_block = self.parse_block()?;
-
-            let elif_else_block = if self.check(&[TokenType::KEYWORD(Keywords::ELIF)]){
-                Some(self.parse_block()?)
-            }else { None };
-
-
-            Some(vec![ASTNode::Statement(Statement::IfStatement(IfStatement{
+            elif_branches.push(ElifStatement {
                 condition: elif_condition,
-                elif_block: elif_then_block,
-                else_block: elif_else_block,
-            }))])
+                block: elif_then_block,
+            });
+        }
 
-        }else if self.check(&[TokenType::KEYWORD(Keywords::ELSE)]){
+        let else_block = if self.check(&[TokenType::KEYWORD(Keywords::ELSE)]) {
             self.consume(TokenType::KEYWORD(Keywords::ELSE))?;
-            //Some(self.parse_body_block()?)
             Some(self.parse_block()?)
-        }else { None };
+        } else {
+            None
+        };
 
-        println!("Fin du parsing de l'instruction if OKKKKKKKKKKKK");
-        Ok(ASTNode::Statement(Statement::IfStatement(IfStatement{
+        Ok(ASTNode::Statement(Statement::IfStatement(IfStatement {
             condition,
-            elif_block,
+            then_block,
+            elif_block: elif_branches,
             else_block,
         })))
-
     }
 
     pub fn  parse_while_statement(&mut self) ->Result<ASTNode,ParserError>{
@@ -199,17 +211,6 @@ impl Parser{
         }
         Ok(None)
     }
-
-
-
-
-
-
-
-
-
-
-
 
 
 

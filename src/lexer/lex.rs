@@ -93,6 +93,7 @@ impl<'a> Lexer<'a>  {
         keywords.insert("loop".to_string(),Keywords::LOOP);
         keywords.insert("match".to_string(),Keywords::MATCH);
         keywords.insert("mod".to_string(),Keywords::MOD);
+        keywords.insert("mut".to_string(),Keywords::MUT);
         keywords.insert("None".to_string(),Keywords::NONE);
 
         keywords.insert("not".to_string(),Keywords::NOT);

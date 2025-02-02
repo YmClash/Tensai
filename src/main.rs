@@ -14,13 +14,13 @@ fn main() {
     let code_sourde5 = r#"pub tensor A = 10 "#;
     let code_sourde6 = r#"@shape(2,2) tensor C = A @ B"#;
 
-    let code_sourde7 = r#"pub tensor A = 10 for i in range(100) { if i > 0 {print(i)}else{print(0)}} while i < 100 {print(i)}"#;
+    let code_sourde7 = r#"pub tensor A = 10 for i in range(100) { if sum(A) > 100 {print("A est grand")} elif sum(A) < 100 {print("A est petit")}else{print("A est égal à 100")}}"#;
     let code_sourde8 = r#"tensor A = [1.0, 2.0, 3.0]"#;
 
     let code_sourde9 = r#"tensor B:f32 @shape(2,2,2) = [[[1.0, 2.0], [3.0, 4.0]], [[5.0, 6.0], [7.0, 8.0]]]"#;
-    let code_sourde10 = r#"fn dot_product(a: int, b: int) -> int {return sum(a * b)}"#;
+    let code_sourde10 = r#"fn dot_product(a:int, b:int) -> int { let mut x:i32 = 10;tensor B:f32 @shape(2,2,2) = [[[1.0, 2.0], [3.0, 4.0]], [[5.0, 6.0], [7.0, 8.0]]];return sum(A@B)}"#;
 
-    let mut lexer = Lexer::new(code_sourde9);
+    let mut lexer = Lexer::new(code_sourde7);
     let tokens = lexer.tokenize();
 
     for (i,tok) in tokens.iter().enumerate(){

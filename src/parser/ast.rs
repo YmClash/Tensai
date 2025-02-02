@@ -86,7 +86,8 @@ pub struct TensorDeclaration {
     // pub decorators: Vec<Decorator>,
     // pub shape: TensorDimension,
     pub shape: Option<Shape>,
-    pub dtype: DataType,
+    // pub dtype: DataType,
+    pub dtype: TensorDataType,
     // pub layout: TensorLayout,
     pub visibility: Visibility,
     // pub value: Option<Expression>,
@@ -457,7 +458,7 @@ pub enum Statement{
     // RaiseStatement(RaiseStatement),
     // DelStatement(DelStatement),
     IfStatement(IfStatement),
-    //ElifStatement(ElifStatement),
+    ElifStatement(ElifStatement),
     WhileStatement(WhileStatement),
     ForStatement(ForStatement),
     LoopStatement(LoopStatement),
@@ -542,8 +543,16 @@ pub struct ReturnStatement {
 #[derive(Clone, Debug, PartialEq)]
 pub struct IfStatement {
     pub condition: Expression,
-    pub elif_block: Vec<ASTNode>,
+    pub then_block: Vec<ASTNode>,
+    pub elif_block: Vec<ElifStatement>,
     pub else_block: Option<Vec<ASTNode>>,
+
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct ElifStatement {
+    pub condition: Expression,
+    pub block: Vec<ASTNode>,
 }
 
 
