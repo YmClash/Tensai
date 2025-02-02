@@ -124,12 +124,10 @@ pub struct VariableDeclaration {
 #[derive(Debug, Clone, PartialEq)]
 pub struct FunctionDeclaration {
     pub name: String,
-    pub parameters: Vec<Parameter>,
-    pub return_type: DataType,
-    pub body: Body,
-    pub visibility: Visibility,
-    pub mutability: Mutability,
-    pub annotations: Vec<Annotation>,
+    pub parameters: Vec<Parameter>, // (nom, type)
+    pub return_type: Option<DataType>,
+    pub body: Vec<ASTNode>,
+    pub visibility: Visibility
 }
 #[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq)]
@@ -277,17 +275,6 @@ pub enum SliceSpec {
     All,
 }
 
-
-
-// #[allow(dead_code)]
-// #[derive(Debug, Clone, PartialEq)]
-// pub struct MatchArm {
-//     pub pattern: Pattern,
-//     pub guard: Option<Box<Expression>>,
-//     //pub expression: Box<Expression>
-//     pub body: Body,
-// }
-
 #[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq)]
 pub struct CompoundAssignment{
@@ -305,9 +292,8 @@ pub struct CompoundAssignment{
 #[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq)]
 pub struct ArrayExpression{
-    // pub elements: Vec<Vec<Expression>>,
     pub elements: Vec<Expression>,
-    // pub elements: Expression,
+    pub dimensions: Option<Vec<usize>>,
 }
 #[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq)]

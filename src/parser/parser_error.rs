@@ -57,7 +57,9 @@ pub enum ParserErrorType{
 
     ExpectedCloseParenthesis,
     ExpectedCommaOrCloseBrace,
-    InvalidShapeValue
+    InvalidShapeValue,
+    ExpectedParameterName,
+    ValidationError,
 
 }
 
@@ -120,6 +122,8 @@ impl Display for ParserErrorType {
 
             ParserErrorType::ExpectedCommaOrCloseBrace => write!(f, "Expected Comma Or Close Brace"),
             ParserErrorType::InvalidShapeValue => write!(f, "Invalid Shape Value"),
+            ParserErrorType::ExpectedParameterName => write!(f, "Expected Parameter Name"),
+            ParserErrorType::ValidationError => write!(f, "Validation Error"),
 
 
 
@@ -160,6 +164,8 @@ impl  ParserError{
 
             ParserErrorType::ExpectedCommaOrCloseBrace => "Expected comma or close brace".to_string(),
             ParserErrorType::InvalidShapeValue => "Invalid shape value".to_string(),
+            ParserErrorType::ExpectedParameterName => "Expected parameter name".to_string(),
+            ParserErrorType::ValidationError => "Validation error".to_string(),
 
 
         };

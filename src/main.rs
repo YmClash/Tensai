@@ -17,7 +17,8 @@ fn main() {
     let code_sourde7 = r#"pub tensor A = 10 for i in range(100) { if i > 0 {print(i)}else{print(0)}} while i < 100 {print(i)}"#;
     let code_sourde8 = r#"tensor A = [1.0, 2.0, 3.0]"#;
 
-    let code_sourde9 = r#"tensor A:f32 @shape(2,2) = [1.0, 2.0, 3.0] "#;
+    let code_sourde9 = r#"tensor B:f32 @shape(2,2,2) = [[[1.0, 2.0], [3.0, 4.0]], [[5.0, 6.0], [7.0, 8.0]]]"#;
+    let code_sourde10 = r#"fn dot_product(a: int, b: int) -> int {return sum(a * b)}"#;
 
     let mut lexer = Lexer::new(code_sourde9);
     let tokens = lexer.tokenize();

@@ -3,7 +3,7 @@
 
 //  ici on vas parser  les statement
 
-use crate::parser::ast::{Body, DataType, ForStatement, IfStatement, LoopStatement, Statement, VariableDeclaration, WhileStatement};
+use crate::parser::ast::{Body, BreakStatement, DataType, ForStatement, IfStatement, LoopStatement, Statement, VariableDeclaration, WhileStatement};
 use crate::lexer::tok::{Delimiters, Keywords, Operators, TokenType};
 use crate::parser::ast::{ASTNode, Mutability, Visibility};
 // use crate::parser::ast::ASTNode::Body;
@@ -19,8 +19,12 @@ impl Parser{
             self.parse_variable_declaration()
         }else if self.check(&[TokenType::KEYWORD(Keywords::TENSOR)]) {
             let visibility = visibility.unwrap_or(Visibility::Private);
-            self.tensor_declaration(visibility)
-        }else if self.check(&[TokenType::KEYWORD(Keywords::IF)]) {
+            self.parse_tensor_declaration(visibility)
+        }else if self.check(&[TokenType::KEYWORD(Keywords::FN)]) {
+            let visibility = visibility.unwrap_or(Visibility::Private);
+            self.parse_function_declaration(visibility)
+        }
+        else if self.check(&[TokenType::KEYWORD(Keywords::IF)]) {
             self.parse_if_statement()
         }else if self.check(&[TokenType::KEYWORD(Keywords::WHILE)]) {
             self.parse_while_statement()
@@ -28,6 +32,12 @@ impl Parser{
             self.parse_for_statement()
         }else if self.check(&[TokenType::KEYWORD(Keywords::LOOP)]) {
             self.parse_loop_statement()
+        }else if self.match_token(&[TokenType::KEYWORD(Keywords::BREAK)]){
+            self.consume_seperator();
+            Ok(ASTNode::Statement(Statement::Break))
+        }else if self.match_token(&[TokenType::KEYWORD(Keywords::CONTINUE)]){
+            self.consume_seperator();
+            Ok(ASTNode::Statement(Statement::Continue))
         }
         else {
             self.parse_expression_statement()
@@ -69,11 +79,11 @@ impl Parser{
             let stmt = self.parse_statement()?;
             statements.push(stmt);
             // je vais ajoute un code qui  m'aiderai  a  parse le  body de parse_declaration_body
-            if self.check(&[TokenType::DELIMITER(Delimiters::COMMA)]){
-                self.consume(TokenType::DELIMITER(Delimiters::COMMA))?;
-            }else if !self.check(&[TokenType::DELIMITER(Delimiters::RCURBRACE)]) {
-                return Err(ParserError::new(ExpectedCommaOrCloseBrace, self.current_position()));
-            }
+            // if self.check(&[TokenType::DELIMITER(Delimiters::COMMA)]){
+            //     self.consume(TokenType::DELIMITER(Delimiters::COMMA))?;
+            // }else if !self.check(&[TokenType::DELIMITER(Delimiters::RCURBRACE)]) {
+            //     return Err(ParserError::new(ExpectedCommaOrCloseBrace, self.current_position()));
+            // }
         }
         self.consume(TokenType::DELIMITER(Delimiters::RCURBRACE))?;
         Ok(statements)

@@ -16,4 +16,6 @@ src = "src/lib.rs"
 name = "lex_test"
 path = "tests/lex_test.rs"
 
-#[[test]]
+[[test]]
+name = "parse_tests"
+

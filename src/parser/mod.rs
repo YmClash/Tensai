@@ -7,3 +7,5 @@ mod utils;
 mod statements;
 mod types;
 mod declarations;
+mod arrays;
+mod parser_tests;

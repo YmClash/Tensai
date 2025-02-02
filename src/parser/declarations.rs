@@ -1,8 +1,8 @@
 use crate::lexer::tok::{Delimiters, Keywords, Operators, TokenType};
-use crate::parser::ast::{ArrayExpression, ASTNode, DataType, Declaration, Decorator, Device, Expression, Literal, Mutability, Shape, TensorDeclaration, TensorDimension, TensorLayout, VariableDeclaration, Visibility};
+use crate::parser::ast::{ArrayExpression, ASTNode, DataType, Declaration, Decorator, Device, Expression, FunctionDeclaration, Literal, Mutability, Parameter, ReturnStatement, Shape, Statement, TensorDeclaration, TensorDimension, TensorLayout, VariableDeclaration, Visibility};
 use crate::parser::parser::Parser;
 use crate::parser::parser_error::ParserError;
-use crate::parser::parser_error::ParserErrorType::{InvalidShapeValue, UnexpectedEndOfInput, UnexpectedToken};
+use crate::parser::parser_error::ParserErrorType::{ExpectedParameterName, InvalidShapeValue, UnexpectedEndOfInput, UnexpectedToken, ValidationError};
 
 impl Parser{
 
@@ -41,7 +41,7 @@ impl Parser{
 
     }
 
-    pub fn tensor_declaration(&mut self, visibility: Visibility) -> Result<ASTNode, ParserError> {
+    pub fn parse_tensor_declaration(&mut self, visibility: Visibility) -> Result<ASTNode, ParserError> {
         println!("Début de la déclaration de tenseur");
 
 
@@ -84,93 +84,6 @@ impl Parser{
 
     }
 
-
-    pub fn parse_array_expression(&mut self) -> Result<Expression, ParserError> {
-
-        self.consume(TokenType::DELIMITER(Delimiters::LSBRACKET))?;
-        let mut elements = Vec::new();
-        loop {
-            if !self.check(&[TokenType::DELIMITER(Delimiters::RSBRACKET)]) {
-                elements.push(self.parse_expression(0)?);
-
-                if self.match_token(&[TokenType::DELIMITER(Delimiters::COMMA)]) {
-                    continue;
-                }
-            }
-
-        }
-
-    }
-
-    // fn parse_decorators(&mut self) -> Result<Vec<Decorator>, ParserError> {
-    //     let mut decorators = Vec::new();
-    //     while self.check_decorator() {  // check si token courant est TokenType::OPERATOR(Operators::AROBAS) ou similaire
-    //         let decorator = self.parse_decorator()?;
-    //         decorators.push(decorator);
-    //     }
-    //     Ok(decorators)
-    // }
-    // // parse_decorator() -> ex. @shape(2,2) ou @gpu etc.
-    // pub fn  parse_decorator(&mut self) -> Result<Decorator,ParserError> {
-    //     println!("Début de la décoration");
-    //     self.consume(TokenType::OPERATOR(Operators::AT))?;
-    //     let name = self.consume_identifier()?;
-    //     let arguments = if self.match_token(&[TokenType::DELIMITER(Delimiters::LPAR)]) {
-    //         // self.parse_decorator_arguments()?
-    //         self.parse_arguments_list()?
-    //     } else {
-    //         Vec::new()
-    //         // None
-    //     };
-    //     Ok(Decorator{
-    //         name,
-    //         arguments
-    //     })
-    //
-    // }
-    //
-    //
-
-    pub fn parse_array_or_matrix_literal(&mut self) -> Result<Expression, ParserError> {
-        // Consommer '['
-        self.consume(TokenType::DELIMITER(Delimiters::LSBRACKET))?;
-
-        let mut all_elements = Vec::new();
-
-        loop {
-            // Parse un élément (entier ou flottant)
-            match &self.current_token().unwrap().token_type {
-                TokenType::FLOAT { value } => {
-                    all_elements.push(Expression::Literal(Literal::Float { value: *value }));
-                    self.advance();
-                },
-                TokenType::INTEGER { value } => {
-                    all_elements.push(Expression::Literal(Literal::Integer {
-                        value: value.clone()
-                    }));
-                    self.advance();
-                },
-                _ => return Err(ParserError::new(UnexpectedToken, self.current_position())),
-            }
-
-            // Vérifie le token suivant
-            match &self.current_token().unwrap().token_type {
-                TokenType::DELIMITER(Delimiters::COMMA) => {
-                    self.advance();
-                    continue;
-                },
-                TokenType::DELIMITER(Delimiters::RSBRACKET) => {
-                    self.advance();
-                    break;
-                },
-                _ => return Err(ParserError::new(UnexpectedToken, self.current_position())),
-            }
-        }
-
-        Ok(Expression::Array(Box::new(ArrayExpression {
-            elements: all_elements,
-        })))
-    }
 
 
     fn parse_device(&mut self) -> Result<Device, ParserError> {
@@ -248,6 +161,94 @@ impl Parser{
         Ok(Shape { shape })
 
     }
+
+    pub fn parse_function_declaration(&mut self, visibility: Visibility) -> Result<ASTNode, ParserError> {
+        println!("Début du parsing de la déclaration de fonction");
+        self.consume(TokenType::KEYWORD(Keywords::FN))?;
+        let name = self.consume_identifier()?;
+        println!("Nom de la fonction parsé : {}", name);
+
+        self.consume(TokenType::DELIMITER(Delimiters::LPAR))?;
+
+        let parameters = self.parse_function_parameters()?;
+        // let parameters = self.parse_arguments_list()?;
+
+        self.consume(TokenType::DELIMITER(Delimiters::RPAR))?;
+
+        let return_type = if self.match_token(&[TokenType::OPERATOR(Operators::RARROW)]) {
+            self.parse_type()?
+        } else {
+            DataType::Infer // Ou un type par défaut
+        };
+
+        let body = self.parse_block()?;
+
+        // let return_type = self.parse_return_type(return_type, &body)?;
+
+        // self.consume_seperator();  plus de ; apres une fonction
+
+        Ok(ASTNode::Declaration(Declaration::FunctionDeclaration(FunctionDeclaration {
+            name,
+            parameters,
+            return_type: Some(return_type),
+            body,
+            visibility,
+        })))
+    }
+
+    pub fn parse_return_statement(&mut self) -> Result<ASTNode, ParserError> {
+        println!("Début du parsing de l'instruction de retour");
+        self.consume(TokenType::KEYWORD(Keywords::RETURN))?;
+        let value = if !self.match_token(&[TokenType::NEWLINE, TokenType::EOF]) {
+            Some(self.parse_expression(0)?)
+        } else {
+            None
+        };
+        println!("Valeur de retour parsée : {:?}", value);
+        println!("Fin du parsing de l'instruction de retour OK!!!!!!!!!!!!!!");
+        Ok(ASTNode::Statement(Statement::ReturnStatement(ReturnStatement{
+            value,
+        })))
+
+
+    }
+
+    pub fn parse_function_parameters(&mut self) -> Result<Vec<Parameter>, ParserError> {
+        println!("Début du parsing des paramètres de fonction");
+        let mut parameters = Vec::new();
+
+        if self.check(&[TokenType::DELIMITER(Delimiters::RPAR)]){
+            // pas de paramètres
+            return Ok(parameters);
+        }
+
+        if !self.match_token(&[TokenType::DELIMITER(Delimiters::RPAR)]) {
+            loop {
+                //let name = self.consume_parameter_name()?;
+                let name = self.consume_identifier()?;
+                println!("Nom du paramètre parsé : {}", name);
+                self.consume(TokenType::DELIMITER(Delimiters::COLON))?;
+                let param_type = self.parse_type()?;
+                println!("Type du paramètre parsé : {:?}", param_type);
+
+                parameters.push(Parameter { name, parameter_type: param_type });
+
+                if self.match_token(&[TokenType::DELIMITER(Delimiters::COMMA)]) {
+                    continue;
+                } else if self.check(&[TokenType::DELIMITER(Delimiters::RPAR)]) {
+                    break;
+                }else {
+                    println!("Erreur lors du parsing des paramètres, token actuel : {:?}", self.current_token());
+                    return Err(ParserError::new(ExpectedParameterName, self.current_position()));
+                }
+            }
+        }
+        println!("Paramètres parsés : {:?}", parameters);
+        Ok(parameters)
+    }
+
+
+
 
 
 
