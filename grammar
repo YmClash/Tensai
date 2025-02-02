@@ -1,0 +1,6 @@
+
+
+
+
+
+tensor_declaration = "tensor", identifier, [ ":", data_type ], [ "=", expression ], [ "@", device ] ;

@@ -58,7 +58,7 @@ impl<'a> Lexer<'a>  {
             operators: Self::operators(),
             delimiters: Self::delimiters(),
             current_line: 1,
-            current_column: 1,
+            current_column: 0,
             current_token_text: String::new(),
             at_line_start: true,
         };
@@ -70,9 +70,11 @@ impl<'a> Lexer<'a>  {
         let mut keywords = HashMap::new();
         keywords.insert("and".to_string(),Keywords::AND);
         keywords.insert("as".to_string(),Keywords::AS);
+        keywords.insert("assert".to_string(),Keywords::ASSERT);
         keywords.insert("break".to_string(),Keywords::BREAK);
         keywords.insert("class".to_string(),Keywords::CLASS);
         keywords.insert("continue".to_string(),Keywords::CONTINUE);
+        keywords.insert("cache".to_string(),Keywords::CACHE);
         keywords.insert("del".to_string(),Keywords::DEL);
         keywords.insert("elif".to_string(),Keywords::ELIF);
         keywords.insert("else".to_string(),Keywords::ELSE);
@@ -91,6 +93,7 @@ impl<'a> Lexer<'a>  {
         keywords.insert("loop".to_string(),Keywords::LOOP);
         keywords.insert("match".to_string(),Keywords::MATCH);
         keywords.insert("mod".to_string(),Keywords::MOD);
+        keywords.insert("mut".to_string(),Keywords::MUT);
         keywords.insert("None".to_string(),Keywords::NONE);
 
         keywords.insert("not".to_string(),Keywords::NOT);
@@ -105,6 +108,7 @@ impl<'a> Lexer<'a>  {
         keywords.insert("struct".to_string(),Keywords::STRUCT);
         keywords.insert("tensor".to_string(),Keywords::TENSOR);
         keywords.insert("True".to_string(),Keywords::TRUE);
+        keywords.insert("tpu".to_string(),Keywords::TPU);
         keywords.insert("type".to_string(),Keywords::TYPE);
         keywords.insert("typeof".to_string(),Keywords::TYPEOF);
         keywords.insert("use".to_string(),Keywords::USE);
@@ -113,6 +117,24 @@ impl<'a> Lexer<'a>  {
         keywords.insert("while".to_string(),Keywords::WHILE);
 
         keywords.insert("yield".to_string(),Keywords::YIELD);
+
+        //TYPE KEYWORDS
+        keywords.insert("optim".to_string(),Keywords::OPTIM);
+        keywords.insert("matrix".to_string(),Keywords::MATRIX);
+        keywords.insert("vector".to_string(),Keywords::VECTOR);
+        keywords.insert("scalar".to_string(),Keywords::SCALAR);
+        keywords.insert("nan".to_string(),Keywords::NAN);
+        keywords.insert("inf".to_string(),Keywords::INF);
+        keywords.insert("nanf".to_string(),Keywords::NANF);
+        keywords.insert("inff".to_string(),Keywords::INFF);
+        keywords.insert("device".to_string(),Keywords::DEVICE);
+        keywords.insert("shape".to_string(),Keywords::SHAPE);
+
+        keywords.insert("i32".to_string(),Keywords::I32);
+        keywords.insert("i64".to_string(),Keywords::I64);
+        keywords.insert("f32".to_string(),Keywords::F32);
+        keywords.insert("f64".to_string(),Keywords::F64);
+
 
         return keywords;
 
@@ -172,6 +194,10 @@ impl<'a> Lexer<'a>  {
 
         operators.insert("..".to_string(), Operators::DOTDOT);
         operators.insert("..=".to_string(), Operators::DOTDOTEQUAL);
+        operators.insert("'".to_string(), Operators::TRANSPOSE);
+        operators.insert("#>".to_string(), Operators::CONTRACT);
+
+
 
         return operators;
     }
@@ -209,7 +235,7 @@ impl<'a> Lexer<'a>  {
             Some('0'..='9') => Some(self.lex_number()),
             Some('a'..='z') | Some('A'..='Z') | Some('_') => Some(self.lex_identifier_or_keyword()),
             Some('"') | Some('\'') => Some(self.lex_string()),
-            Some('#') => Some(self.lex_comment()),
+            Some('#') => Some(self.lex_operator().unwrap()),
             Some('/') => {
                 if let Some(next_char) = self.peek_next_char() {
                     match next_char {
@@ -231,6 +257,8 @@ impl<'a> Lexer<'a>  {
 
     fn lex_number(&mut self) -> TokenType {
         self.current_token_text.clear();
+
+
         if self.peek_char() == Some('0') {
             if let Some(next_char) = self.peek_next_char() {
                 if next_char == 'x' || next_char == 'X' {
@@ -493,14 +521,14 @@ impl<'a> Lexer<'a>  {
 
         match self.peek_char() {
             // Pour les commentaires sur une ligne
-            Some('/') | Some('#') => {
-                self.next_char(); // Skip second '/' or '#'
-                while let Some(&ch) = self.source.peek() {
-                    if ch == '\n' { break; }
-                    comment.push(self.next_char().unwrap());
-                }
-                TokenType::COMMENT(comment)
-            },
+            // Some('/') /*| Some('#')*/ => {
+            //     self.next_char(); // Skip second '/' or '#'
+            //     while let Some(&ch) = self.source.peek() {
+            //         if ch == '\n' { break; }
+            //         comment.push(self.next_char().unwrap());
+            //     }
+            //     TokenType::COMMENT(comment)
+            // },
             // Pour les commentaires multi-lignes
             Some('*') => {
                 self.next_char(); // Skip '*'
@@ -526,6 +554,7 @@ impl<'a> Lexer<'a>  {
             },
             _ => TokenType::COMMENT(comment)
         }
+        // todo!()
     }
 
 
@@ -559,6 +588,45 @@ impl<'a> Lexer<'a>  {
             }
         }
         return tokens;
+    }
+
+
+    fn lex_complex_number(&mut self) -> TokenType {
+        self.current_token_text.clear();
+        let mut real_part = String::new();
+        let mut imag_part = String::new();
+        let mut has_imag = false;
+
+        while let Some(&ch) = self.source.peek() {
+            if ch.is_digit(10) || ch == '.' || ch == '+' || ch == '-' {
+                real_part.push(self.next_char().unwrap());
+            } else if ch == 'i' {
+                has_imag = true;
+                self.next_char();
+                break;
+            } else {
+                break;
+            }
+        }
+
+        if has_imag {
+            while let Some(&ch) = self.source.peek() {
+                if ch.is_digit(10) || ch == '.' {
+                    imag_part.push(self.next_char().unwrap());
+                } else {
+                    break;
+                }
+            }
+        }
+
+        if real_part.is_empty() || imag_part.is_empty() {
+            self.create_error(LexerErrorType::InvalidFloat(format!("{}+{}i", real_part, imag_part)))
+        } else {
+            TokenType::COMPLEX {
+                real: real_part.parse::<f64>().unwrap(),
+                imag: imag_part.parse::<f64>().unwrap(),
+            }
+        }
     }
 
 

@@ -17,3 +17,8 @@ name = "lex_test"
 path = "tests/lex_test.rs"
 
 #[[test]]
+#name = "parse_tests"
+#path = "tests/parse_tests.rs"
+
+#[[test]]
+

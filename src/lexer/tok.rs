@@ -12,7 +12,7 @@ pub enum TokenType{
     // INTEGER(IntegerType),
     // FLOAT(FloatType),
 
-    // COMPLEX(ComplexType),
+    COMPLEX{ real: f64, imag: f64},
 
     HEXADECIMAL {value: u64},
     STRING {value: String,kind: StringKind},
@@ -67,7 +67,7 @@ pub enum Operators{
     DOUBLESTAREQUAL, // '**=' DOUBLE ETOILE EGAL / DOUBLE STAR EQUAL
     AND,             // '&&' ET ET / AND
     OR,              // '||' OU OU / OR
-    AT,               // '@' AROBASE / AT
+
 
     //DOUBLESLASH, // '//' DOUBLE SLASH / DOUBLE SLASH
     DOUBLESLASHEQUAL, // '//=' DOUBLE SLASH EGAL / DOUBLE SLASH EQUAL
@@ -87,7 +87,7 @@ pub enum Operators{
     DOTDOTEQUAL, // '..=' DEUX POINTS EGAL / DOUBLE DOT EQUAL RangeInclusive Operator
 
 
-    // TENSORPROD,               // '@' AROBASE / AT
+    AT,               // '@' AROBASE / AT// TENSORPROD,               // '@' AROBASE / AT
     TRANSPOSE,   // "'" TRANSPOSE / TRANSPOSE ou  "'"
     CONTRACT,    //  "#>"          // Contraction complète
     CONTRACTDIM, //  "#[0-9]+>"    // Contraction sur dimensions spécifiques
@@ -97,15 +97,33 @@ pub enum Operators{
 #[allow(dead_code)]
 #[derive(Debug, PartialEq,Clone)]
 pub enum Keywords {
-    AND,AS,BREAK,BLOCK, CONST, CLASS, CONTINUE, CACHE, DEL, ELIF, ELSE, ENUM, EXCEPT,
-    EXPAND, FALSE, FINALLY, FN, FOR, GPU, IF, IMPL, IN, IS, LAMBDA, LET, LOOP, MATCH, MOD, NONE,
-    NOT, ON, OR, PARALLEL, PUB, PASS,RETURN, SELF, STRUCT, TENSOR, TRUE, TYPE, TYPEOF, USE, WHERE, WHILE, YIELD,
+    AND,AS,ASSERT,BREAK,BLOCK, CONST, CLASS, CONTINUE, CACHE, CPU,DEL, ELIF, ELSE, ENUM, EXCEPT,
+    EXPAND, FALSE, FINALLY, FN, FOR, GPU, IF, IMPL, IN, IS, LAMBDA, LET, LOOP, MATCH, MOD, MUT,NONE,
+    NOT, ON, OR, PARALLEL, PUB, PASS,RETURN, SELF, STRUCT, TENSOR, TRUE,TPU, TYPE, TYPEOF, USE, WHERE, WHILE, YIELD,
 
     //TYPE KEYWORDS
     I32, I64, F32, F64, C32, C64, STR, CHAR, BOOL,
 
+    //
+    INT,FLOAT,COMPLEX,STRING, //TYPE KEYWORDS
+
     //gestion de memoire
-    USING,ALLOC,FREE
+    USING,ALLOC,FREE,
+
+    //new keywords
+    OPTIM,   //optimisation
+    MATRIX,  //matrice
+    VECTOR,  //vecteur
+    SCALAR,  //scalaire
+    NAN,     //not a number
+    INF,     //infini
+    NANF,    //not a number float
+    INFF,    //infini float
+    DEVICE,  //device
+    SHAPE,   //shape
+
+
+
 
 }
 
@@ -160,8 +178,8 @@ pub enum IntegerType{
 #[allow(dead_code)]
 #[derive(Debug, PartialEq,Clone)]
 pub enum ComplexType{
-    Complex32{real: f32, imag: f32},
-    Complex64{real: f64, imag: f64},
+    // Complex32{real: f32, imag: f32},
+    // Complex64{real: f64, imag: f64},
 }
 
 #[allow(dead_code)]
