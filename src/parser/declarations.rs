@@ -67,9 +67,9 @@ impl Parser{
         let value = self.parse_expression(0)?;
 
 
-        let device = if self.match_token(&[TokenType::OPERATOR(Operators::AT)]){
-            Some(self.parse_device()?)
-        }else { None };
+        // let device = if self.match_token(&[TokenType::OPERATOR(Operators::AT)]){
+        //     Some(self.parse_device()?)
+        // }else { None };
 
 
         self.consume_seperator();
@@ -82,7 +82,8 @@ impl Parser{
             dtype,
             value,
             mutability,
-            visibility
+            visibility,
+            // device,
         })))
 
     }
