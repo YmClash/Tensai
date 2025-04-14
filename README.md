@@ -9,10 +9,10 @@ optimisé sur CPU, GPU ou d’autres cibles.
 exemple de code en Tensaï: Déclaration de tenseurs
 ```tensai
 // Tenseur 2D de shape (3, 3) avec des valeurs flottantes
-tensor A = [1.0, 2.0, 3.0; 4.0, 5.0, 6.0; 7.0, 8.0, 9.0]
+tensor A = tensor A = [1.0, 2.0, 3.0]
 
 // Tenseur 3D de shape (2, 2, 2) avec des valeurs entières
-tensor B = [[1, 2], [3, 4]; [5, 6], [7, 8]]
+tensor B:f32 @shape(2,2,2) = [[[1.0, 2.0], [3.0, 4.0]], [[5.0, 6.0], [7.0, 8.0]]]
 
 // Tenseur vide de shape (2, 3) avec un type explicite
 tensor C: f32 = zeros(2, 3)

@@ -1,5 +1,5 @@
 use crate::lexer::tok::{Delimiters, Keywords, Operators, TokenType};
-use crate::parser::ast::{ArrayExpression, ASTNode, DataType, Declaration, Device, Expression, FunctionDeclaration, Literal,  Parameter, ReturnStatement, Shape, Statement, TensorDeclaration, TensorDimension, TensorLayout, VariableDeclaration, Visibility};
+use crate::parser::ast::{ASTNode, DataType, Declaration, Device, Expression, FunctionDeclaration, Literal,  Parameter, ReturnStatement, Shape, Statement, TensorDeclaration, TensorDimension, TensorLayout, VariableDeclaration, Visibility};
 use crate::parser::parser::Parser;
 use crate::parser::parser_error::ParserError;
 use crate::parser::parser_error::ParserErrorType::{ InvalidShapeValue, UnexpectedEndOfInput, UnexpectedToken,};
@@ -67,9 +67,9 @@ impl Parser{
         let value = self.parse_expression(0)?;
 
 
-        let device = if self.match_token(&[TokenType::OPERATOR(Operators::AT)]){
-            Some(self.parse_device()?)
-        }else { None };
+        // let device = if self.match_token(&[TokenType::OPERATOR(Operators::AT)]){
+        //     Some(self.parse_device()?)
+        // }else { None };
 
 
         self.consume_seperator();
@@ -82,7 +82,8 @@ impl Parser{
             dtype,
             value,
             mutability,
-            visibility
+            visibility,
+            // device,
         })))
 
     }
