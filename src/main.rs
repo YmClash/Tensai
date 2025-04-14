@@ -26,7 +26,7 @@ fn main() {
 
     // let code_sourde12= r#" if sum(A) > 100 {print("A est grand")} elif sum(A) < 100 {print("A est petit")}else{print("A est égal à 100");"#;
 
-    let mut lexer = Lexer::new(code_source);
+    let mut lexer = Lexer::new(code_source8);
     let tokens = lexer.tokenize();
 
 
