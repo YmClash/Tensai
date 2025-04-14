@@ -307,11 +307,6 @@ impl Parser{
 
     }
 
-
-
-
-
-
     fn get_operator_precedence(&self, operator: &Operator) -> u8 {
         match operator {
             Operator::Multiplication | Operator::Division | Operator::Modulo => 5,
@@ -510,7 +505,5 @@ impl Parser{
     //         step
     //     }))
     // }
-
-
 
 }
